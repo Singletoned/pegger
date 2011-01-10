@@ -21,3 +21,17 @@ def test_parse_string_b():
 
     result = parse_string("c", letter_b)
     assert result == None
+
+def test_parse_string_ab():
+    def letter_a():
+        return "a"
+
+    def letter_b():
+        return "b"
+
+    def word_ab():
+        return (letter_a, letter_b)
+
+    result = parse_string("ab", word_ab)
+    assert result == [['letter_a', "a"], ['letter_b', "b"]]
+
