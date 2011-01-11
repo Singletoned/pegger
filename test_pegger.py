@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pegger import parse_string
+from pegger import parse_string, Some
 
 def test_parse_string_a():
     def letter_a():
@@ -35,3 +35,12 @@ def test_parse_string_ab():
     result = parse_string("ab", word_ab)
     assert result == [['letter_a', "a"], ['letter_b', "b"]]
 
+def test_parse_string_some_a():
+    def word_a():
+        return Some('a')
+
+    result = parse_string("aa", word_a)
+    assert result == ['word_a', "aa"]
+
+    result = parse_string("aaa", word_a)
+    assert result == ['word_a', "aaa"]
