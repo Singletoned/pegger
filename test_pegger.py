@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import py
+
 import pegger as pg
 
 
@@ -15,6 +17,8 @@ def test_match_some():
     assert match == ['word_a', "aa"]
     assert rest == "b"
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_some("ccc", word_a)
 
 def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
@@ -29,6 +33,8 @@ def test_match_text():
     result = pg.match_text("aabc", letter_a)
     assert result == (['letter_a', "a"], "abc")
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_text("ccc", letter_a)
 
 def test_match_tuple():
     def letter_a():
@@ -43,6 +49,8 @@ def test_match_tuple():
     result = pg.match_tuple("ab", word_ab)
     assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
 
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.match_tuple("cab", word_ab)
 
 def test_parse_string_a():
     def letter_a():
@@ -54,8 +62,8 @@ def test_parse_string_a():
     result = pg.parse_string("ab", letter_a)
     assert result == ['letter_a', "a"]
 
-    result = pg.parse_string("c", letter_a)
-    assert result == None
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("c", letter_a)
 
 
 def test_parse_string_b():
@@ -65,8 +73,8 @@ def test_parse_string_b():
     result = pg.parse_string("b", letter_b)
     assert result == ['letter_b', "b"]
 
-    result = pg.parse_string("c", letter_b)
-    assert result == None
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("c", letter_b)
 
 
 def test_parse_string_ab():
@@ -82,6 +90,8 @@ def test_parse_string_ab():
     result = pg.parse_string("ab", word_ab)
     assert result == [['letter_a', "a"], ['letter_b', "b"]]
 
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("cab", word_ab)
 
 def test_parse_string_some_a():
     def word_a():
@@ -93,6 +103,8 @@ def test_parse_string_some_a():
     result = pg.parse_string("aaa", word_a)
     assert result == ['word_a', "aaa"]
 
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("caa", word_a)
 
 def test_parse_string_some_aab():
     def word_a():
@@ -106,3 +118,6 @@ def test_parse_string_some_aab():
 
     result = pg.parse_string("aab", word_aab)
     assert result == [['word_a', "aa"], ['letter_b', "b"]]
+
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("caab", word_aab)

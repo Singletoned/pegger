@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+
+class NoPatternFound(Exception):
+    pass
+
+
 class Some(object):
     def __init__(self, pattern):
         self.pattern = pattern
+
 
 def match_some(text, pattern):
     match = []
@@ -13,6 +19,8 @@ def match_some(text, pattern):
             match.append(rest.pop(0))
         else:
             break
+    if not match:
+        raise NoPatternFound
     return ([pattern.__name__, "".join(match)], "".join(rest))
 
 def match_text(text, pattern):
@@ -22,7 +30,7 @@ def match_text(text, pattern):
         rest = text[len(pattern()):]
         return ([pattern.__name__, pattern()], rest)
     else:
-        return (None, None)
+        raise NoPatternFound
 
 def match_tuple(text, pattern):
     "Match each of the patterns in the tuple in turn"
