@@ -7,6 +7,7 @@ class NoPatternFound(Exception):
 
 
 class Some(object):
+    """A matcher that matches any one char repeatedly"""
     def __init__(self, pattern):
         self.pattern = pattern
 
@@ -21,6 +22,7 @@ class Words(object):
         
 
 def match_some(text, pattern):
+    """Match the given char repeatedly"""
     match = []
     rest = list(text)
     while rest:
@@ -75,6 +77,7 @@ matchers = {
     }
 
 def do_parse(text, pattern):
+    """Dispatch to the correct function based on the type of the pattern"""
     if text == pattern():
         return ([pattern.__name__, text], '')
     pattern_type = type(pattern())
