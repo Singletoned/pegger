@@ -121,3 +121,10 @@ def test_parse_string_some_aab():
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("caab", word_aab)
+
+def test_parse_words():
+    def body():
+        return pg.Words()
+
+    result = pg.parse_string("The confused dog jumped over the fox", body)
+    assert result == ['body', "The confused dog jumped over the fox"]

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import string
 
 class NoPatternFound(Exception):
     pass
@@ -10,12 +11,36 @@ class Some(object):
         self.pattern = pattern
 
 
+class Words(object):
+    """A matcher that matches any sequence of letters and spaces"""
+    letters = string.uppercase + string.lowercase + " "
+    
+    def __init__(self, letters=None):
+        if letters:
+            self.letters = letters
+        
+
 def match_some(text, pattern):
     match = []
     rest = list(text)
     while rest:
         char = rest[0]
         if pattern().pattern == char:
+            match.append(rest.pop(0))
+        else:
+            break
+    if not match:
+        raise NoPatternFound
+    return ([pattern.__name__, "".join(match)], "".join(rest))
+
+def match_words(text, pattern):
+    "Match everything that is part of pattern.letters"
+    match = []
+    rest = list(text)
+    letters = pattern().letters
+    while rest:
+        char = rest[0]
+        if char in letters:
             match.append(rest.pop(0))
         else:
             break
@@ -46,6 +71,7 @@ matchers = {
     unicode: match_text,
     tuple: match_tuple,
     Some: match_some,
+    Words: match_words
     }
 
 def do_parse(text, pattern):
