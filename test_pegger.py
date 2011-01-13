@@ -2,6 +2,7 @@
 
 import pegger as pg
 
+
 def test_match_some():
     def word_a():
         return pg.Some('a')
@@ -13,6 +14,7 @@ def test_match_some():
     match, rest = pg.match_some("aab", word_a)
     assert match == ['word_a', "aa"]
     assert rest == "b"
+
 
 def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
@@ -27,6 +29,7 @@ def test_match_text():
     result = pg.match_text("aabc", letter_a)
     assert result == (['letter_a', "a"], "abc")
 
+
 def test_match_tuple():
     def letter_a():
         return "a"
@@ -39,6 +42,7 @@ def test_match_tuple():
 
     result = pg.match_tuple("ab", word_ab)
     assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
+
 
 def test_parse_string_a():
     def letter_a():
@@ -53,6 +57,7 @@ def test_parse_string_a():
     result = pg.parse_string("c", letter_a)
     assert result == None
 
+
 def test_parse_string_b():
     def letter_b():
         return "b"
@@ -62,6 +67,7 @@ def test_parse_string_b():
 
     result = pg.parse_string("c", letter_b)
     assert result == None
+
 
 def test_parse_string_ab():
     def letter_a():
@@ -76,6 +82,7 @@ def test_parse_string_ab():
     result = pg.parse_string("ab", word_ab)
     assert result == [['letter_a', "a"], ['letter_b', "b"]]
 
+
 def test_parse_string_some_a():
     def word_a():
         return pg.Some('a')
@@ -85,6 +92,7 @@ def test_parse_string_some_a():
 
     result = pg.parse_string("aaa", word_a)
     assert result == ['word_a', "aaa"]
+
 
 def test_parse_string_some_aab():
     def word_a():
