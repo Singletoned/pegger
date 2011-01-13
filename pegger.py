@@ -32,18 +32,23 @@ def match_tuple(text, pattern):
         match, rest = do_parse(rest, sub_pattern)
         result.append(match)
     return (result, rest)
-    
+
+matchers = {
+    str: match_text,
+    unicode: match_text,
+    tuple: match_tuple,
+    Some: match_some,
+    }
 
 def do_parse(text, pattern):
     if text == pattern():
         return ([pattern.__name__, text], '')
-    elif isinstance(pattern(), (str, unicode)):
-        return match_text(text, pattern)
-    elif isinstance(pattern(), tuple):
-        return match_tuple(text, pattern)
-    elif isinstance(pattern(), Some):
-        return match_some(text, pattern)
-    else:
+    pattern_type = type(pattern())
+    try:
+        matcher_func = matchers[pattern_type]
+        result = matcher_func(text, pattern)
+        return result
+    except KeyError:
         return (None, None)
 
 def parse_string(text, pattern):
