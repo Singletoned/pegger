@@ -61,6 +61,23 @@ def test_match_ignore():
     match, rest = pg.match_ignore("a", ignore_a)
     assert match == []
     assert rest == ""
+
+def test_match_one_of():
+    def emphasis():
+        return (
+            lambda: pg.Ignore("*"),
+            lambda: pg.Words(),
+            lambda: pg.Ignore("*"))
+
+    def words():
+        return pg.Words()
+
+    def phrase():
+        return pg.OneOf(
+            words,
+            emphasis)
+
+    match, rest = pg.match_one_of("*bold*", phrase)
     
 def test_parse_string_a():
     def letter_a():
@@ -146,3 +163,24 @@ def test_parse_ignore():
 
     result = pg.parse_string("*bold words*", emphasis)
     assert result == ['emphasis', "bold words"]
+
+def test_parse_one_of():
+    def emphasis():
+        return (
+            lambda: pg.Ignore("*"),
+            lambda: pg.Words(),
+            lambda: pg.Ignore("*"))
+
+    def words():
+        return pg.Words()
+
+    def phrase():
+        return pg.OneOf(
+            words,
+            emphasis)
+
+    result = pg.parse_string("*bold words*", phrase)
+    assert result == ['emphasis', "bold words"]
+
+    result = pg.parse_string("normal words", phrase)
+    assert result == ['words', "normal words"]

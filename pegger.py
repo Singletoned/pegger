@@ -21,6 +21,11 @@ class Ignore(Matcher):
     pass
 
 
+class OneOf(Matcher):
+    """A matcher that matches the first matching matcher"""
+    def __init__(self, *options):
+        self.options = options
+
 
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
@@ -91,7 +96,19 @@ def match_ignore(text, pattern):
         return ([], rest)
     else:
         raise NoPatternFound
-    
+
+def match_one_of(text, pattern):
+    """Match one of the patterns given"""
+    for sub_pattern in pattern().options:
+        try:
+            match, rest = do_parse(text, sub_pattern)
+        except NoPatternFound:
+            continue
+        if match:
+            if match[0] == "<lambda>":
+                match = match[1]
+            return (match, rest)
+
 
 matchers = {
     str: match_text,
@@ -100,6 +117,7 @@ matchers = {
     Some: match_some,
     Words: match_words,
     Ignore: match_ignore,
+    OneOf: match_one_of,
     }
 
 def do_parse(text, pattern):
