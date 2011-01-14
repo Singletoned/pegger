@@ -5,6 +5,9 @@ import string
 class NoPatternFound(Exception):
     pass
 
+class UnknownMatcherType(Exception):
+    pass
+
 class Matcher(object):
     """A base matcher"""
     def __init__(self, pattern):
@@ -130,7 +133,7 @@ def do_parse(text, pattern):
         result = matcher_func(text, pattern)
         return result
     except KeyError:
-        return (None, None)
+        raise UnknownMatcherType
 
 def parse_string(text, pattern):
     match, rest = do_parse(text, pattern)

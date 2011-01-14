@@ -184,3 +184,10 @@ def test_parse_one_of():
 
     result = pg.parse_string("normal words", phrase)
     assert result == ['words', "normal words"]
+
+def test_unknown_matcher():
+    def unknown():
+        return 1
+
+    with py.test.raises(pg.UnknownMatcherType):
+        result = pg.parse_string("", unknown)
