@@ -136,3 +136,14 @@ def do_parse(text, pattern):
 def parse_string(text, pattern):
     match, rest = do_parse(text, pattern)
     return match
+
+def get_pattern_info(pattern):
+    pattern_name = ""
+    if callable(pattern):
+        pattern_name = pattern.__name__
+        pattern = pattern()
+        if pattern_name == "<lambda>":
+            pattern_name = ""
+    pattern_type = type(pattern)
+    return pattern, pattern_name, pattern_type
+    

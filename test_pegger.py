@@ -191,3 +191,19 @@ def test_unknown_matcher():
 
     with py.test.raises(pg.UnknownMatcherType):
         result = pg.parse_string("", unknown)
+
+def test_get_pattern_info():
+    def my_pattern():
+        return "123"
+
+    pattern, p_name, p_type = pg.get_pattern_info(my_pattern)
+    assert pattern == "123"
+    assert p_name == "my_pattern"
+    assert p_type == str
+
+    lambda_pattern = lambda: dict()
+
+    pattern, p_name, p_type = pg.get_pattern_info(lambda_pattern)
+    assert pattern == dict()
+    assert p_name == ""
+    assert p_type == type(dict())
