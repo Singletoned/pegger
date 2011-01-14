@@ -5,17 +5,21 @@ import string
 class NoPatternFound(Exception):
     pass
 
-
-class Some(object):
-    """A matcher that matches any one char repeatedly"""
+class Matcher(object):
+    """A base matcher"""
     def __init__(self, pattern):
         self.pattern = pattern
 
 
-class Ignore(object):
+class Some(Matcher):
     """A matcher that matches any one char repeatedly"""
-    def __init__(self, pattern):
-        self.pattern = pattern
+    pass
+
+
+class Ignore(Matcher):
+    """A matcher that matches any one char repeatedly"""
+    pass
+
 
 
 class Words(object):
