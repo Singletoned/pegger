@@ -65,7 +65,6 @@ def test_parse_string_a():
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("c", letter_a)
 
-
 def test_parse_string_b():
     def letter_b():
         return "b"
@@ -75,7 +74,6 @@ def test_parse_string_b():
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("c", letter_b)
-
 
 def test_parse_string_ab():
     def letter_a():
