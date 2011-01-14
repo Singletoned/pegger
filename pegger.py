@@ -125,8 +125,6 @@ matchers = {
 
 def do_parse(text, pattern):
     """Dispatch to the correct function based on the type of the pattern"""
-    if text == pattern():
-        return ([pattern.__name__, text], '')
     pattern_type = type(pattern())
     try:
         matcher_func = matchers[pattern_type]
