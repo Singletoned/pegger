@@ -46,12 +46,22 @@ def test_match_tuple():
     def word_ab():
         return (letter_a, letter_b)
 
-    result = pg.match_tuple("ab", word_ab)
-    assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
+    match, rest = pg.match_tuple("ab", word_ab)
+    assert match == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
+    assert rest == ""
+    # assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.match_tuple("cab", word_ab)
 
+def test_match_ignore():
+    def ignore_a():
+        return pg.Ignore("a")
+
+    match, rest = pg.match_ignore("a", ignore_a)
+    assert match == []
+    assert rest == ""
+    
 def test_parse_string_a():
     def letter_a():
         return "a"
@@ -86,7 +96,7 @@ def test_parse_string_ab():
         return (letter_a, letter_b)
 
     result = pg.parse_string("ab", word_ab)
-    assert result == [['letter_a', "a"], ['letter_b', "b"]]
+    assert result == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("cab", word_ab)
@@ -115,7 +125,7 @@ def test_parse_string_some_aab():
         return (word_a, letter_b)
 
     result = pg.parse_string("aab", word_aab)
-    assert result == [['word_a', "aa"], ['letter_b', "b"]]
+    assert result == ['word_aab', [['word_a', "aa"], ['letter_b', "b"]]]
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("caab", word_aab)
@@ -126,3 +136,13 @@ def test_parse_words():
 
     result = pg.parse_string("The confused dog jumped over the fox", body)
     assert result == ['body', "The confused dog jumped over the fox"]
+
+def test_parse_ignore():
+    def emphasis():
+        return (
+            lambda: pg.Ignore("*"),
+            lambda: pg.Words(),
+            lambda: pg.Ignore("*"))
+
+    result = pg.parse_string("*bold words*", emphasis)
+    assert result == ['emphasis', "bold words"]

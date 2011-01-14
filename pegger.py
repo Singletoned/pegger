@@ -12,6 +12,12 @@ class Some(object):
         self.pattern = pattern
 
 
+class Ignore(object):
+    """A matcher that matches any one char repeatedly"""
+    def __init__(self, pattern):
+        self.pattern = pattern
+
+
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
     letters = string.uppercase + string.lowercase + " "
@@ -65,15 +71,31 @@ def match_tuple(text, pattern):
     rest = text
     for sub_pattern in pattern():
         match, rest = do_parse(rest, sub_pattern)
-        result.append(match)
+        if match:
+            if match[0] == "<lambda>":
+                match = match[1]
+            result.append(match)
+    if len(result) == 1:
+        result = result[0]
+    result = [pattern.__name__, result]
     return (result, rest)
+
+def match_ignore(text, pattern):
+    "Match the pattern, but return no result"
+    if text.startswith(pattern().pattern):
+        rest = text[len(pattern().pattern):]
+        return ([], rest)
+    else:
+        raise NoPatternFound
+    
 
 matchers = {
     str: match_text,
     unicode: match_text,
     tuple: match_tuple,
     Some: match_some,
-    Words: match_words
+    Words: match_words,
+    Ignore: match_ignore,
     }
 
 def do_parse(text, pattern):
