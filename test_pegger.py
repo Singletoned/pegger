@@ -6,35 +6,33 @@ import pegger as pg
 
 
 def test_match_some():
-    def word_a():
-        return pg.Some('a')
+    word_a = pg.Some('a')
 
-    match, rest = pg.match_some("a", word_a)
+    match, rest = pg.match_some("a", word_a, "word_a")
     assert match == ['word_a', "a"]
     assert rest == ""
 
-    match, rest = pg.match_some("aab", word_a)
+    match, rest = pg.match_some("aab", word_a, "word_a")
     assert match == ['word_a', "aa"]
     assert rest == "b"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_some("ccc", word_a)
+        match, rest = pg.match_some("ccc", word_a, "word_a")
 
 def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
     of the text and returns the rest"""
 
-    def letter_a():
-        return "a"
+    letter_a = "a"
     
-    result = pg.match_text("ab", letter_a)
+    result = pg.match_text("ab", letter_a, "letter_a")
     assert result == (['letter_a', "a"], "b")
 
-    result = pg.match_text("aabc", letter_a)
+    result = pg.match_text("aabc", letter_a, "letter_a")
     assert result == (['letter_a', "a"], "abc")
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_text("ccc", letter_a)
+        match, rest = pg.match_text("ccc", letter_a, "letter_a")
 
 def test_match_tuple():
     def letter_a():
@@ -43,22 +41,20 @@ def test_match_tuple():
     def letter_b():
         return "b"
 
-    def word_ab():
-        return (letter_a, letter_b)
+    word_ab = (letter_a, letter_b)
 
-    match, rest = pg.match_tuple("ab", word_ab)
+    match, rest = pg.match_tuple("ab", word_ab, "word_ab")
     assert match == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
     assert rest == ""
     # assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
 
     with py.test.raises(pg.NoPatternFound):
-        result = pg.match_tuple("cab", word_ab)
+        result = pg.match_tuple("cab", word_ab, "word_ab")
 
 def test_match_ignore():
-    def ignore_a():
-        return pg.Ignore("a")
+    ignore_a = pg.Ignore("a")
 
-    match, rest = pg.match_ignore("a", ignore_a)
+    match, rest = pg.match_ignore("a", ignore_a, "ignore_a")
     assert match == []
     assert rest == ""
 
@@ -72,12 +68,13 @@ def test_match_one_of():
     def words():
         return pg.Words()
 
-    def phrase():
-        return pg.OneOf(
+    phrase = pg.OneOf(
             words,
             emphasis)
 
-    match, rest = pg.match_one_of("*bold*", phrase)
+    match, rest = pg.match_one_of("*bold*", phrase, "phrase")
+    assert match == ['emphasis', "bold"]
+    assert rest == ""
     
 def test_parse_string_a():
     def letter_a():
