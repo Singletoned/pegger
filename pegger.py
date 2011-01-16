@@ -30,6 +30,12 @@ class OneOf(Matcher):
         self.options = options
 
 
+class Many(Matcher):
+    """A matcher that repeatedly matches any of the options"""
+    def __init__(self, *options):
+        self.options = options
+
+
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
     letters = string.uppercase + string.lowercase + " "
@@ -112,6 +118,24 @@ def match_one_of(text, pattern, name):
                 match = match[1]
             return (match, rest)
 
+def match_many(text, pattern, name):
+    """Repeatedly match any of the given patterns"""
+    result = []
+    rest = text
+    while rest:
+        for sub_pattern in pattern.options:
+            try:
+                match, rest = do_parse(rest, sub_pattern)
+            except NoPatternFound:
+                continue
+            if match:
+                if (not match[0]) or (match[0] == "<lambda>"):
+                    match = match[1]
+                result.append(match)
+    if len(result) == 1:
+        result = result[0]
+    return ([name, result], rest)
+        
 
 matchers = {
     str: match_text,
@@ -121,6 +145,7 @@ matchers = {
     Words: match_words,
     Ignore: match_ignore,
     OneOf: match_one_of,
+    Many: match_many,
     }
 
 def do_parse(text, pattern):

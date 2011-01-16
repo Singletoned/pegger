@@ -75,6 +75,35 @@ def test_match_one_of():
     match, rest = pg.match_one_of("*bold*", phrase, "phrase")
     assert match == ['emphasis', "bold"]
     assert rest == ""
+
+def test_match_many_simple():
+    def a():
+        return "a"
+
+    def b():
+        return "b"
+
+    letters = pg.Many(a, b)
+
+    match, rest = pg.match_many("abab", letters, "letters")
+    assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
+    assert rest == ""
+
+def test_match_many_complex():
+    def emphasis():
+        return (
+            lambda: pg.Ignore("*"),
+            lambda: pg.Words(),
+            lambda: pg.Ignore("*"))
+
+    def words():
+        return pg.Words()
+
+    body = pg.Many(emphasis, words)
+
+    match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
+    assert match == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
+    assert rest == ""
     
 def test_parse_string_a():
     def letter_a():
@@ -181,6 +210,27 @@ def test_parse_one_of():
 
     result = pg.parse_string("normal words", phrase)
     assert result == ['words', "normal words"]
+
+def test_parse_many():
+    def emphasis():
+        return (
+            lambda: pg.Ignore("*"),
+            lambda: pg.Words(),
+            lambda: pg.Ignore("*"))
+
+    def words():
+        return pg.Words()
+
+    def phrase():
+        return pg.OneOf(
+            words,
+            emphasis)
+
+    def body():
+        return pg.Many(phrase)
+
+    result = pg.parse_string("a phrase with *bold words* in it", body)
+    assert result == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
 
 def test_unknown_matcher():
     def unknown():
