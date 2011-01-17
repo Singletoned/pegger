@@ -24,6 +24,10 @@ class Ignore(Matcher):
     pass
 
 
+class Not(Matcher):
+    """A matcher that matches any string that isn't the pattern"""
+    pass
+
 class OneOf(Matcher):
     """A matcher that matches the first matching matcher"""
     def __init__(self, *options):
@@ -140,7 +144,21 @@ def match_many(text, pattern, name):
     if len(result) == 1:
         result = result[0]
     return ([name, result], rest)
-        
+
+def match_not(text, pattern, name):
+    """Match any string that is not the pattern"""
+    match = []
+    rest = text
+    while rest:
+        if rest.startswith(pattern.pattern):
+            break
+        else:
+            match.append(rest[0])
+            rest = rest[1:]
+    if not match:
+        raise NoPatternFound
+    else:
+        return ([name, "".join(match)], rest)
 
 matchers = {
     str: match_text,
@@ -151,6 +169,7 @@ matchers = {
     Ignore: match_ignore,
     OneOf: match_one_of,
     Many: match_many,
+    Not: match_not,
     }
 
 def do_parse(text, pattern):

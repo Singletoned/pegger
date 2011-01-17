@@ -113,6 +113,20 @@ def test_match_many_complex():
     match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
     assert match == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
     assert rest == ""
+
+def test_match_not():
+    not_a = pg.Not("a")
+
+    match, rest = pg.match_not("b", not_a, 'not_a')
+    assert match == ['not_a', "b"]
+    assert rest == ""
+
+    match, rest = pg.match_not("ba", not_a, 'not_a')
+    assert match == ['not_a', "b"]
+    assert rest == "a"
+
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_not("abc", not_a, 'not_a')
     
 def test_parse_string_a():
     def letter_a():
@@ -244,6 +258,15 @@ def test_parse_many():
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("123", body)
     
+def test_not():
+    def not_a():
+        return pg.Not("a")
+
+    result = pg.parse_string("bc", not_a)
+    assert result == ['not_a', 'bc']
+
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("a", not_a)
 
 def test_unknown_matcher():
     def unknown():
