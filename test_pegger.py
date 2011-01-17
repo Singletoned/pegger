@@ -58,6 +58,9 @@ def test_match_ignore():
     assert match == []
     assert rest == ""
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_ignore("123", ignore_a, "ignore_a")
+
 def test_match_one_of():
     def emphasis():
         return (
