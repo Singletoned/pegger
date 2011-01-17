@@ -76,6 +76,9 @@ def test_match_one_of():
     assert match == ['emphasis', "bold"]
     assert rest == ""
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_one_of("123", phrase, "phrase")
+
 def test_match_many_simple():
     def a():
         return "a"

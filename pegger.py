@@ -117,6 +117,7 @@ def match_one_of(text, pattern, name):
             if (not match) or (match[0] == "<lambda>"):
                 match = match[1]
             return (match, rest)
+    raise NoPatternFound
 
 def match_many(text, pattern, name):
     """Repeatedly match any of the given patterns"""
