@@ -124,15 +124,19 @@ def match_many(text, pattern, name):
     result = []
     rest = text
     while rest:
+        match_made = False
         for sub_pattern in pattern.options:
             try:
                 match, rest = do_parse(rest, sub_pattern)
             except NoPatternFound:
                 continue
             if match:
+                match_made = True
                 if (not match[0]) or (match[0] == "<lambda>"):
                     match = match[1]
                 result.append(match)
+        if not match_made:
+            raise NoPatternFound
     if len(result) == 1:
         result = result[0]
     return ([name, result], rest)

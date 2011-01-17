@@ -92,6 +92,9 @@ def test_match_many_simple():
     assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
     assert rest == ""
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_many("abc", letters, "letters")
+
 def test_match_many_complex():
     def emphasis():
         return (
@@ -234,6 +237,10 @@ def test_parse_many():
 
     result = pg.parse_string("a phrase with *bold words* in it", body)
     assert result == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
+
+    with py.test.raises(pg.NoPatternFound):
+        result = pg.parse_string("123", body)
+    
 
 def test_unknown_matcher():
     def unknown():
