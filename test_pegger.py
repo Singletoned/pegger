@@ -312,3 +312,14 @@ def test_get_pattern_info():
     assert pattern == dict()
     assert p_name == ""
     assert p_type == type(dict())
+
+def test_reprs():
+    # Pattern matchers
+    assert repr(pg.Some("a")) == "<Some pattern='a'>"
+    assert repr(pg.Ignore("#")) == "<Ignore pattern='#'>"
+    assert repr(pg.Not("#")) == "<Not pattern='#'>"
+
+    # Option matchers
+    assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"
+    assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
+    assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"

@@ -10,34 +10,44 @@ class UnknownMatcherType(Exception):
 
 class Matcher(object):
     """A base matcher"""
+
+
+class PatternMatcher(Matcher):
+    """A base Matcher that has a pattern"""
     def __init__(self, pattern):
         self.pattern = pattern
 
+    def __repr__(self):
+        return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
 
-class Some(Matcher):
+
+class OptionsMatcher(Matcher):
+    """A base Matcher with a list of options"""
+    def __init__(self, *options):
+        self.options = options
+
+    def __repr__(self):
+        return "<%s options=%r>" % (self.__class__.__name__, self.options)
+
+
+class Some(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
-    pass
 
 
-class Ignore(Matcher):
+class Ignore(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
-    pass
 
 
-class Not(Matcher):
+class Not(PatternMatcher):
     """A matcher that matches any string that isn't the pattern"""
-    pass
 
-class OneOf(Matcher):
+
+class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
-    def __init__(self, *options):
-        self.options = options
 
 
-class Many(Matcher):
+class Many(OptionsMatcher):
     """A matcher that repeatedly matches any of the options"""
-    def __init__(self, *options):
-        self.options = options
 
 
 class Words(object):
@@ -47,6 +57,9 @@ class Words(object):
     def __init__(self, letters=None):
         if letters:
             self.letters = letters
+
+    def __repr__(self):
+        return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
         
 
 def match_some(text, pattern, name):
