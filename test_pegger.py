@@ -166,7 +166,18 @@ def test_match_not():
 
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_not("abc", not_a, 'not_a')
-    
+
+def test_match_optional():
+    optional_a = pg.Optional("a")
+
+    match, rest = pg.match_optional("abc", optional_a, 'optional_a')
+    assert match == ['optional_a', "a"]
+    assert rest == "bc"
+
+    match, rest = pg.match_optional("bc", optional_a, 'optional_a')
+    assert match == []
+    assert rest == "bc"
+
 def test_parse_string_a():
     def letter_a():
         return "a"
@@ -335,6 +346,7 @@ def test_reprs():
     assert repr(pg.Some("a")) == "<Some pattern='a'>"
     assert repr(pg.Ignore("#")) == "<Ignore pattern='#'>"
     assert repr(pg.Not("#")) == "<Not pattern='#'>"
+    assert repr(pg.Optional("#")) == "<Optional pattern='#'>"
 
     # Option matchers
     assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"

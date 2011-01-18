@@ -60,7 +60,11 @@ class Words(object):
 
     def __repr__(self):
         return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
-        
+
+
+class Optional(PatternMatcher):
+    """A matcher that matches the pattern if it's available"""
+    pass
 
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
@@ -174,6 +178,13 @@ def match_not(text, pattern, name):
         raise NoPatternFound
     else:
         return ([name, "".join(match)], rest)
+
+def match_optional(text, pattern, name):
+    """Match pattern if it's there"""
+    try:
+        return match_text(text, pattern.pattern, name)
+    except NoPatternFound:
+        return ([], text)
 
 matchers = {
     str: match_text,
