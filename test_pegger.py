@@ -95,8 +95,13 @@ def test_match_many_simple():
     assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
     assert rest == ""
 
+    match, rest = pg.match_many("ababcc", letters, "letters")
+    assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
+    assert rest == "cc"
+
+
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_many("abc", letters, "letters")
+        match, rest = pg.match_many("cab", letters, "letters")
 
 def test_match_many_complex():
     def emphasis():

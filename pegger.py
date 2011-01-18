@@ -140,7 +140,9 @@ def match_many(text, pattern, name):
                     match = match[1]
                 result.append(match)
         if not match_made:
-            raise NoPatternFound
+            break
+    if not result:
+        raise NoPatternFound
     if len(result) == 1:
         result = result[0]
     return ([name, result], rest)
