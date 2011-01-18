@@ -42,7 +42,7 @@ class Many(Matcher):
 
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
-    letters = string.uppercase + string.lowercase + " "
+    letters = string.uppercase + string.lowercase + " .,"
     
     def __init__(self, letters=None):
         if letters:

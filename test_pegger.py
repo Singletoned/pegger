@@ -34,6 +34,23 @@ def test_match_text():
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_text("ccc", letter_a, "letter_a")
 
+def test_match_words():
+    """Test that Words matches letters and punctuation"""
+    plain = pg.Words()
+
+    match, rest = pg.match_words("some words", plain, 'plain')
+    assert match == ['plain', "some words"]
+    assert rest == ""
+
+    match, rest = pg.match_words("some words 123", plain, 'plain')
+    assert match == ['plain', "some words "]
+    assert rest == "123"
+
+    match, rest = pg.match_words("Some words, and punctuation.", plain, 'plain')
+    assert match == ['plain', "Some words, and punctuation."]
+    assert rest == ""
+
+
 def test_match_tuple():
     def letter_a():
         return "a"
