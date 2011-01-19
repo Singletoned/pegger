@@ -171,10 +171,24 @@ def test_match_optional():
     optional_a = pg.Optional("a")
 
     match, rest = pg.match_optional("abc", optional_a, 'optional_a')
-    assert match == ['optional_a', "a"]
+    assert match == ['', "a"]
     assert rest == "bc"
 
     match, rest = pg.match_optional("bc", optional_a, 'optional_a')
+    assert match == []
+    assert rest == "bc"
+
+    def letter_a():
+        return "a"
+
+    optional_a = pg.Optional(letter_a)
+    match, rest = pg.match_optional("abc", optional_a, 'optional_a')
+    assert match == ['letter_a', "a"]
+    assert rest == "bc"
+
+    optional_ignore = pg.Optional(pg.Ignore("a"))
+
+    match, rest = pg.match_optional("abc", optional_ignore, 'optional_ignore')
     assert match == []
     assert rest == "bc"
 
@@ -317,6 +331,31 @@ def test_not():
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("a", not_a)
+
+def test_optional():
+    def optional_a():
+        return pg.Optional("a")
+
+    result = pg.parse_string("a", optional_a)
+    expected = ['', "a"]
+    assert expected == result
+
+
+    def optional_a():
+        return pg.Optional("a")
+
+    def letters():
+        return pg.Words()
+
+    def body():
+        return (optional_a, letters)
+
+    result = pg.parse_string("abc", body)
+    expected = [
+        'body',
+        [['', "a"],
+         ['letters', "bc"]]]
+    assert expected == result
 
 def test_unknown_matcher():
     def unknown():

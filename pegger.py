@@ -182,7 +182,7 @@ def match_not(text, pattern, name):
 def match_optional(text, pattern, name):
     """Match pattern if it's there"""
     try:
-        return match_text(text, pattern.pattern, name)
+        return do_parse(text, pattern.pattern)
     except NoPatternFound:
         return ([], text)
 
@@ -196,6 +196,7 @@ matchers = {
     OneOf: match_one_of,
     Many: match_many,
     Not: match_not,
+    Optional: match_optional,
     }
 
 def do_parse(text, pattern):
