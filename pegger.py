@@ -121,10 +121,10 @@ def match_tuple(text, pattern, name):
 
 def match_ignore(text, pattern, name):
     "Match the pattern, but return no result"
-    if text.startswith(pattern.pattern):
-        rest = text[len(pattern.pattern):]
+    try:
+        match, rest = do_parse(text, pattern.pattern)
         return ([], rest)
-    else:
+    except NoPatternFound:
         raise NoPatternFound
 
 def match_one_of(text, pattern, name):

@@ -92,6 +92,14 @@ def test_match_ignore():
     assert match == []
     assert rest == ""
 
+    ignore_a = pg.Ignore(
+        (pg.Optional("#"),
+         "abc"))
+
+    match, rest = pg.match_ignore("#abc", ignore_a, "ignore_a")
+    assert match == []
+    assert rest == ""
+
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_ignore("123", ignore_a, "ignore_a")
 
