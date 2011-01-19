@@ -107,11 +107,11 @@ def match_tuple(text, pattern, name):
     for sub_pattern in pattern:
         match, rest = do_parse(rest, sub_pattern)
         if match:
-            if (not match[0]) or (match[0] == "<lambda>"):
-                match = match[1]
             result.append(match)
     if len(result) == 1:
         result = result[0]
+    if not result[0]:
+        result = result[1]
     result = [name, result]
     return (result, rest)
 

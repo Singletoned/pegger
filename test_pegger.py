@@ -63,7 +63,24 @@ def test_match_tuple():
     match, rest = pg.match_tuple("ab", word_ab, "word_ab")
     assert match == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
     assert rest == ""
-    # assert result == ([['letter_a', "a"], ['letter_b', "b"]], "")
+
+    word_abc = (letter_a, pg.Words())
+
+    match, rest = pg.match_tuple("abc", word_abc, "word_ab")
+    assert match == ['word_ab', [['letter_a', "a"], ['', "bc"]]]
+    assert rest == ""
+
+    match, rest = pg.match_tuple("abc!", word_abc, "word_ab")
+    assert match == ['word_ab', [['letter_a', "a"], ['', "bc"]]]
+    assert rest == "!"
+
+    emphasis = (
+        lambda: pg.Ignore("*"),
+        lambda: pg.Words(),
+        lambda: pg.Ignore("*"))
+
+    match, rest = pg.match_tuple("*abc*", emphasis, "emphasis")
+    assert match == ['emphasis', "abc"]
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.match_tuple("cab", word_ab, "word_ab")
