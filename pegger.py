@@ -166,7 +166,10 @@ def match_many(text, pattern, name):
         raise NoPatternFound
     if len(result) == 1:
         result = result[0]
-    return ([name, result], rest)
+    if name:
+        return ([name, result], rest)
+    else:
+        return (result, rest)
 
 def match_not(text, pattern, name):
     """Match any string that is not the pattern"""

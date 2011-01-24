@@ -141,6 +141,9 @@ def test_match_many_simple():
     assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
     assert rest == "cc"
 
+    match, rest = pg.match_many("ababcc", letters, "")
+    assert match == [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
+    assert rest == "cc"
 
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_many("cab", letters, "letters")
