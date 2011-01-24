@@ -65,6 +65,11 @@ class Words(object):
 class Optional(PatternMatcher):
     """A matcher that matches the pattern if it's available"""
 
+
+class Indented(PatternMatcher):
+    """A matcher that removes indentation from the text before matching the pattern"""
+
+
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
     match = []
@@ -185,6 +190,39 @@ def match_optional(text, pattern, name):
     except NoPatternFound:
         return ([], text)
 
+def match_indented(text, pattern, name):
+    """Remove indentation before matching"""
+    if text.startswith("\n"):
+        text = text[1:]
+    else:
+        raise NoPatternFound
+    indent = ""
+    for char in text:
+        if char == " ":
+            indent = indent + char
+        else:
+            break
+    if not indent:
+        raise NoPatternFound
+    lines = text.split("\n")
+    other_lines = list(lines)
+    indented_lines = []
+    for line in lines:
+        if line.startswith(indent):
+            unindented_line = other_lines.pop(0)[len(indent):]
+            indented_lines.append(unindented_line)
+        else:
+            break
+    indented_text = "\n" + "\n".join(indented_lines)
+    other_rest = "\n".join(other_lines)
+    try:
+        indented_match, indented_rest = do_parse(indented_text, pattern.pattern)
+    except NoPatternFound:
+        raise NoPatternFound
+    rest = indented_rest + "\n" + other_rest
+    return indented_match, rest
+
+    
 matchers = {
     str: match_text,
     unicode: match_text,
@@ -196,6 +234,7 @@ matchers = {
     Many: match_many,
     Not: match_not,
     Optional: match_optional,
+    Indented: match_indented,
     }
 
 def do_parse(text, pattern):

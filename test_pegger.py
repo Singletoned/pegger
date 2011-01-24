@@ -365,6 +365,67 @@ def test_optional():
          ['letters', "bc"]]]
     assert expected == result
 
+def test_indented():
+    def list_item():
+        return (
+            pg.Ignore("\n* "),
+            pg.Words())
+
+    def nested_list():
+        return (
+            list_item,
+            pg.Optional(
+                pg.Many(
+                    list_item,
+                    pg.Indented(
+                        nested_list))))
+
+    data = """
+* A bullet
+"""
+
+    expected = [
+        'nested_list',
+        ['list_item', "A bullet"]]
+
+    result = pg.parse_string(data, nested_list)
+    assert expected == result
+
+    data = """
+* A bullet
+  * A bullet in a sublist
+"""
+
+    expected = [
+        'nested_list',
+        [['list_item', "A bullet"],
+         ['',
+          ['nested_list',
+           ['list_item', "A bullet in a sublist"]]]]]
+
+    result = pg.parse_string(data, nested_list)
+    assert expected == result
+
+    data = """
+* A bullet
+  * A bullet in a sublist
+  * Another bullet in a sublist
+* Another bullet in the first list
+"""
+
+    expected = [
+        'nested_list',
+        [['list_item', "A bullet"],
+         ['',
+          [['nested_list',
+          [['list_item', "A bullet in a sublist"],
+           ['',
+           ['list_item', "Another bullet in a sublist"]]]],
+          ['list_item', "Another bullet in the first list"]]]]]
+
+    result = pg.parse_string(data, nested_list)
+    assert expected == result
+
 def test_unknown_matcher():
     def unknown():
         return 1
