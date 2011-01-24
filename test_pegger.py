@@ -203,6 +203,26 @@ def test_match_optional():
     assert match == []
     assert rest == "bc"
 
+def test_match_indented():
+    def list_item():
+        return (
+            pg.Ignore("\n* "),
+            pg.Words())
+
+    indented_bullets = pg.Indented(
+        pg.Many(list_item))
+
+    data = """
+  * A bullet"""
+
+    expected = [
+        'indented_bullets',
+        ['list_item', "A bullet"]]
+
+    match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+    assert match == expected
+    assert rest == "\n"
+
 def test_parse_string_a():
     def letter_a():
         return "a"
@@ -402,9 +422,8 @@ def test_indented():
     expected = [
         'nested_list',
         [['list_item', "A bullet"],
-         ['',
           ['nested_list',
-           ['list_item', "A bullet in a sublist"]]]]]
+           ['list_item', "A bullet in a sublist"]]]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result
@@ -419,12 +438,10 @@ def test_indented():
     expected = [
         'nested_list',
         [['list_item', "A bullet"],
-         ['',
-          [['nested_list',
-          [['list_item', "A bullet in a sublist"],
-           ['',
-           ['list_item', "Another bullet in a sublist"]]]],
-          ['list_item', "Another bullet in the first list"]]]]]
+         [['nested_list',
+           [['list_item', "A bullet in a sublist"],
+            ['list_item', "Another bullet in a sublist"]]],
+          ['list_item', "Another bullet in the first list"]]]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result

@@ -223,7 +223,10 @@ def match_indented(text, pattern, name):
     except NoPatternFound:
         raise NoPatternFound
     rest = indented_rest + "\n" + other_rest
-    return indented_match, rest
+    if name:
+        return ([name, indented_match], rest)
+    else:
+        return indented_match, rest
 
     
 matchers = {
