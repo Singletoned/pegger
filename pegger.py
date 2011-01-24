@@ -64,7 +64,6 @@ class Words(object):
 
 class Optional(PatternMatcher):
     """A matcher that matches the pattern if it's available"""
-    pass
 
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
