@@ -25,11 +25,13 @@ def test_match_text():
 
     letter_a = "a"
     
-    result = pg.match_text("ab", letter_a, "letter_a")
-    assert result == (['letter_a', "a"], "b")
+    match, rest = pg.match_text("ab", letter_a, "letter_a")
+    assert match == ['letter_a', "a"]
+    assert rest == "b"
 
-    result = pg.match_text("aabc", letter_a, "letter_a")
-    assert result == (['letter_a', "a"], "abc")
+    match, rest = pg.match_text("aabc", letter_a, "letter_a")
+    assert match == ['letter_a', "a"]
+    assert rest == "abc"
 
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_text("ccc", letter_a, "letter_a")
