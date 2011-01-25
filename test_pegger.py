@@ -63,17 +63,18 @@ def test_match_tuple():
     word_ab = (letter_a, letter_b)
 
     match, rest = pg.match_tuple("ab", word_ab, "word_ab")
-    assert match == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
+    assert match == ['word_ab', ['letter_a', "a"], ['letter_b', "b"]]
     assert rest == ""
 
     word_abc = (letter_a, pg.Words())
 
+    expected = ['word_ab', ['letter_a', "a"], "bc"]
     match, rest = pg.match_tuple("abc", word_abc, "word_ab")
-    assert match == ['word_ab', [['letter_a', "a"], ['', "bc"]]]
+    assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_tuple("abc!", word_abc, "word_ab")
-    assert match == ['word_ab', [['letter_a', "a"], ['', "bc"]]]
+    match, rest = pg.match_tuple("abc!", word_abc, "")
+    assert match == ['', ['letter_a', "a"], "bc"]
     assert rest == "!"
 
     emphasis = (
@@ -135,16 +136,17 @@ def test_match_many_simple():
 
     letters = pg.Many(a, b)
 
+    expected = ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     match, rest = pg.match_many("abab", letters, "letters")
-    assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
+    assert match == expected
     assert rest == ""
 
     match, rest = pg.match_many("ababcc", letters, "letters")
-    assert match == ['letters', [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]]
+    assert match == ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
     match, rest = pg.match_many("ababcc", letters, "")
-    assert match == [['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
+    assert match == ['', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
     with py.test.raises(pg.NoPatternFound):
@@ -162,8 +164,13 @@ def test_match_many_complex():
 
     body = pg.Many(emphasis, words)
 
+    expected = [
+        'body',
+        ['words', 'a phrase with '],
+         ['emphasis', "bold words"],
+         ['words', " in it"]]
     match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
-    assert match == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
+    assert match == expected
     assert rest == ""
 
 def test_match_not():
@@ -215,11 +222,22 @@ def test_match_indented():
         pg.Many(list_item))
 
     data = """
+* A bullet"""
+
+    expected = [
+        'list_item', "A bullet"]
+
+    match, rest = pg.match_tuple(data, list_item(), 'list_item')
+    assert match == expected
+    assert rest == ""
+
+    data = """
   * A bullet"""
 
     expected = [
         'indented_bullets',
-        ['list_item', "A bullet"]]
+        ['', 
+         ['list_item', "A bullet"]]]
 
     match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
     assert match == expected
@@ -258,8 +276,12 @@ def test_parse_string_ab():
     def word_ab():
         return (letter_a, letter_b)
 
+    expected = ['word_ab',
+                ['letter_a', "a"],
+                ['letter_b', "b"]]
+
     result = pg.parse_string("ab", word_ab)
-    assert result == ['word_ab', [['letter_a', "a"], ['letter_b', "b"]]]
+    assert result == expected
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("cab", word_ab)
@@ -287,8 +309,12 @@ def test_parse_string_some_aab():
     def word_aab():
         return (word_a, letter_b)
 
+    expected = ['word_aab',
+                ['word_a', "aa"],
+                ['letter_b', "b"]]
+
     result = pg.parse_string("aab", word_aab)
-    assert result == ['word_aab', [['word_a', "aa"], ['letter_b', "b"]]]
+    assert result == expected
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("caab", word_aab)
@@ -349,8 +375,13 @@ def test_parse_many():
     def body():
         return pg.Many(phrase)
 
+    expected = ['body',
+                ['words', 'a phrase with '],
+                ['emphasis', "bold words"],
+                ['words', " in it"]]
+
     result = pg.parse_string("a phrase with *bold words* in it", body)
-    assert result == ['body', [['words', 'a phrase with '], ['emphasis', "bold words"], ['words', " in it"]]]
+    assert result == expected
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("123", body)
@@ -386,8 +417,8 @@ def test_optional():
     result = pg.parse_string("abc", body)
     expected = [
         'body',
-        [['', "a"],
-         ['letters', "bc"]]]
+        ['', "a"],
+        ['letters', "bc"]]
     assert expected == result
 
 def test_indented():
@@ -423,9 +454,10 @@ def test_indented():
 
     expected = [
         'nested_list',
-        [['list_item', "A bullet"],
-          ['nested_list',
-           ['list_item', "A bullet in a sublist"]]]]
+        ['list_item', "A bullet"],
+        ['',
+         ['nested_list',
+          ['list_item', "A bullet in a sublist"]]]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result
@@ -439,11 +471,13 @@ def test_indented():
 
     expected = [
         'nested_list',
-        [['list_item', "A bullet"],
-         [['nested_list',
-           [['list_item', "A bullet in a sublist"],
-            ['list_item', "Another bullet in a sublist"]]],
-          ['list_item', "Another bullet in the first list"]]]]
+        ['list_item', "A bullet"],
+        ['',
+         ['nested_list',
+          ['list_item', "A bullet in a sublist"],
+          ['',
+           ['list_item', "Another bullet in a sublist"]]],
+         ['list_item', "Another bullet in the first list"]]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result

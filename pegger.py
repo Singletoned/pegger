@@ -97,7 +97,10 @@ def match_words(text, pattern, name):
             break
     if not match:
         raise NoPatternFound
-    return ([name, "".join(match)], "".join(rest))
+    if not name:
+        return ("".join(match), "".join(rest))
+    else:
+        return ([name, "".join(match)], "".join(rest))
 
 def match_text(text, pattern, name):
     """If the pattern matches the beginning of the text, parser it and
@@ -110,17 +113,12 @@ def match_text(text, pattern, name):
 
 def match_tuple(text, pattern, name):
     "Match each of the patterns in the tuple in turn"
-    result = []
+    result = [name]
     rest = text
     for sub_pattern in pattern:
         match, rest = do_parse(rest, sub_pattern)
         if match:
             result.append(match)
-    if len(result) == 1:
-        result = result[0]
-    if not result[0]:
-        result = result[1]
-    result = [name, result]
     return (result, rest)
 
 def match_ignore(text, pattern, name):
@@ -146,7 +144,7 @@ def match_one_of(text, pattern, name):
 
 def match_many(text, pattern, name):
     """Repeatedly match any of the given patterns"""
-    result = []
+    result = [name]
     rest = text
     while rest:
         match_made = False
@@ -158,16 +156,13 @@ def match_many(text, pattern, name):
             if match:
                 match_made = True
                 if (not match[0]) or (match[0] == "<lambda>"):
-                    match = match[1]
-                result.append(match)
+                    result.extend(match[1:])
+                else:
+                    result.append(match)
         if not match_made:
             break
-    if not result:
+    if result == [name]:
         raise NoPatternFound
-    if len(result) == 1:
-        result = result[0]
-    if name:
-        return ([name, result], rest)
     else:
         return (result, rest)
 
