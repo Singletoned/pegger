@@ -261,20 +261,29 @@ def get_pattern_info(pattern):
             pattern_name = ""
     pattern_type = type(pattern)
     return pattern, pattern_name, pattern_type
-    
-def htmlise(node):
-    lookups = dict(
-        list_item="li",
-        ordered_list="ol")
+
+def htmlise(node, depth=0):
+    lookups = {
+        '': None,
+        'nested_list': "ol",
+        'ordered_list': "ol",
+        'list_item': "li",
+        }
     head, rest = node[0], node[1:]
+    result = []
     tag = lookups[head]
-    start_tag = "<%s>" % tag
-    end_tag = "</%s>" % tag
-    result = [start_tag]
     for item in rest:
-        if isinstance(item, basestring):
-            result.append(item)
+        if tag == None:
+            sub_depth = depth
         else:
-            result.append(htmlise(item))
-    result.append(end_tag)
+            sub_depth = depth + 1
+        if isinstance(item, basestring):
+            result.append("\n" + ("  " * (sub_depth)) + item)
+        else:
+            text = htmlise(item, sub_depth)
+            result.append(text)
+    if tag:
+        start_tag = "\n" + ("  " * depth) + "<%s>" % tag
+        end_tag = "\n" + ("  " * depth) + "</%s>" % tag
+        result = [start_tag] + result + [end_tag]
     return "".join(result)

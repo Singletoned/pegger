@@ -520,13 +520,77 @@ def test_reprs():
 
 def test_htmlise():
     data = ['list_item', "A bullet"]
-    expected = "<li>A bullet</li>"
+    expected = """
+<li>
+  A bullet
+</li>"""
     result = pg.htmlise(data)
     assert expected == result
 
     data = [
         'ordered_list',
         ['list_item', "A bullet"]]
-    expected = "<ol><li>A bullet</li></ol>"
+    expected = """
+<ol>
+  <li>
+    A bullet
+  </li>
+</ol>"""
     result = pg.htmlise(data)
     assert expected == result
+
+
+def test_htmlise_2():
+    def list_item():
+        return (
+            pg.Ignore("\n* "),
+            pg.Words())
+
+    def nested_list():
+        return (
+            list_item,
+            pg.Optional(
+                pg.Many(
+                    list_item,
+                    pg.Indented(
+                        nested_list))))
+
+    data = """
+* A bullet
+  * A bullet in a sublist
+  * Another bullet in a sublist
+* Another bullet in the first list
+"""
+
+    expected = [
+        'nested_list',
+        ['list_item', "A bullet"],
+         ['',
+          ['nested_list',
+           ['list_item', "A bullet in a sublist"],
+           ['', ['list_item', "Another bullet in a sublist"]]],
+          ['list_item', "Another bullet in the first list"]]]
+
+    result = pg.parse_string(data, nested_list)
+    assert expected == result
+
+    expected_html = """
+<ol>
+  <li>
+    A bullet
+  </li>
+  <ol>
+    <li>
+      A bullet in a sublist
+    </li>
+    <li>
+      Another bullet in a sublist
+    </li>
+  </ol>
+  <li>
+    Another bullet in the first list
+  </li>
+</ol>"""
+
+    result = pg.htmlise(expected)
+    assert result == expected_html
