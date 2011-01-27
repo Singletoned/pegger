@@ -516,3 +516,17 @@ def test_reprs():
     assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"
     assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
     assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"
+
+
+def test_htmlise():
+    data = ['list_item', "A bullet"]
+    expected = "<li>A bullet</li>"
+    result = pg.htmlise(data)
+    assert expected == result
+
+    data = [
+        'ordered_list',
+        ['list_item', "A bullet"]]
+    expected = "<ol><li>A bullet</li></ol>"
+    result = pg.htmlise(data)
+    assert expected == result

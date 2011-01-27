@@ -262,3 +262,19 @@ def get_pattern_info(pattern):
     pattern_type = type(pattern)
     return pattern, pattern_name, pattern_type
     
+def htmlise(node):
+    lookups = dict(
+        list_item="li",
+        ordered_list="ol")
+    head, rest = node[0], node[1:]
+    tag = lookups[head]
+    start_tag = "<%s>" % tag
+    end_tag = "</%s>" % tag
+    result = [start_tag]
+    for item in rest:
+        if isinstance(item, basestring):
+            result.append(item)
+        else:
+            result.append(htmlise(item))
+    result.append(end_tag)
+    return "".join(result)
