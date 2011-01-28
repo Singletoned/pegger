@@ -262,13 +262,41 @@ def get_pattern_info(pattern):
     pattern_type = type(pattern)
     return pattern, pattern_name, pattern_type
 
+lookups = {
+    '': None,
+    'nested_list': "ol",
+    'ordered_list': "ol",
+    'list_item': "li",
+    'body': "body",
+    'numbered_bullet': "li",
+    'plain': None,
+    'emphasis': "strong",
+    'code': "code",
+    }
+
+spans = set(["strong", "code"])
+
+def make_tag(data, depth=0):
+    indent = "  " * depth
+    head, rest = data[0], data[1:]
+    tag = lookups[head]
+    result = []
+    for item in rest:
+        if isinstance(item, basestring):
+            result.append(item)
+        else:
+            result.append(make_tag(item, depth+1))
+    content = "".join(result)
+    if content.strip().startswith("<"):
+        start_tag = "<%s>" % tag + "\n"
+        end_tag = "</%s>" % tag + "\n"
+        content = content + indent
+    else:
+        start_tag = "<%s>" % tag
+        end_tag = "</%s>" % tag + "\n"
+    return "%s%s%s" % (start_tag, content, end_tag)
+
 def htmlise(node, depth=0):
-    lookups = {
-        '': None,
-        'nested_list': "ol",
-        'ordered_list': "ol",
-        'list_item': "li",
-        }
     head, rest = node[0], node[1:]
     result = []
     tag = lookups[head]
