@@ -24,7 +24,7 @@ def test_match_text():
     of the text and returns the rest"""
 
     letter_a = "a"
-    
+
     match, rest = pg.match_text("ab", letter_a, "letter_a")
     assert match == ['letter_a', "a"]
     assert rest == "b"
@@ -236,7 +236,7 @@ def test_match_indented():
 
     expected = [
         'indented_bullets',
-        ['', 
+        ['',
          ['list_item', "A bullet"]]]
 
     match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
@@ -385,7 +385,7 @@ def test_parse_many():
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("123", body)
-    
+
 def test_not():
     def not_a():
         return pg.Not("a")
