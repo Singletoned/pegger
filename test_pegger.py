@@ -523,7 +523,7 @@ def test_htmlise():
     expected = """
 <li>
   A bullet
-</li>"""
+</li>""".strip()
     result = pg.htmlise(data)
     assert expected == result
 
@@ -535,100 +535,120 @@ def test_htmlise():
   <li>
     A bullet
   </li>
-</ol>"""
+</ol>""".strip()
     result = pg.htmlise(data)
     assert expected == result
 
 def test_make_tag():
-    expected = "<li>A bullet</li>\n"
-    result = pg.make_tag(['list_item', "A bullet"])
+    expected = """
+<li>
+  A bullet
+</li>""".strip()
+    result = pg.htmlise(['list_item', "A bullet"])
     assert expected == result
 
-    expected = """<ol>
-<li>A bullet</li>
+    data = [
+        'list_item',
+        ['',
+         "A bullet with some ",
+         ['emphasis',
+          "bold"],
+         " in it"]]
+    expected = """
+<li>
+  A bullet with some <strong>bold</strong> in it
+</li>""".strip()
+    result = pg.htmlise(data)
+    assert expected == result
+
+    expected = """
+<ol>
+  <li>
+    A bullet
+  </li>
 </ol>
-"""
-    result = pg.make_tag(['ordered_list', ['list_item', "A bullet"]])
+""".strip()
+    result = pg.htmlise(['ordered_list', ['list_item', "A bullet"]])
     assert expected == result
 
-# def test_htmlise_2():
-#     def list_item():
-#         return (
-#             pg.Ignore("\n* "),
-#             pg.Many(
-#                 pg.Words(),
-#                 code,
-#                 emphasis))
+def test_htmlise_2():
+    def list_item():
+        return (
+            pg.Ignore("\n* "),
+            pg.Many(
+                pg.Words(),
+                code,
+                emphasis))
 
-#     def code():
-#         return (
-#             pg.Ignore("`"),
-#             pg.Not("`"),
-#             pg.Ignore("`"))
+    def code():
+        return (
+            pg.Ignore("`"),
+            pg.Not("`"),
+            pg.Ignore("`"))
 
-#     def emphasis():
-#         return (
-#             pg.Ignore('*'),
-#             pg.Words(),
-#             pg.Ignore('*'))
+    def emphasis():
+        return (
+            pg.Ignore('*'),
+            pg.Words(),
+            pg.Ignore('*'))
 
-#     def nested_list():
-#         return (
-#             list_item,
-#             pg.Optional(
-#                 pg.Many(
-#                     list_item,
-#                     pg.Indented(
-#                         nested_list))))
+    def nested_list():
+        return (
+            list_item,
+            pg.Optional(
+                pg.Many(
+                    list_item,
+                    pg.Indented(
+                        nested_list))))
 
-#     data = """
-# * A numbered bullet
-#   * A bullet in a sublist
-#   * A bullet with *bold* in a sublist
-# * A bullet with `code` in the first list
-# """
+    data = """
+* A numbered bullet
+  * A bullet in a sublist
+  * A bullet with *bold* in a sublist
+* A bullet with `code` in the first list
+"""
 
-#     expected = [
-#         'nested_list',
-#          ['list_item',
-#            ['', "A numbered bullet"]],
-#          ['',
-#           ['nested_list',
-#            ['list_item',
-#               ['', "A bullet in a sublist"]],
-#            ['',
-#             ['list_item',
-#                ['',
-#                 "A bullet with ",
-#                 ['emphasis', "bold"],
-#                 " in a sublist"]]]],
-#           ['list_item',
-#            ['',
-#             "A bullet with ",
-#             ['code',
-#              ['', "code"]],
-#             " in the first list"]]]]
+    expected = [
+        'nested_list',
+         ['list_item',
+           ['', "A numbered bullet"]],
+         ['',
+          ['nested_list',
+           ['list_item',
+              ['', "A bullet in a sublist"]],
+           ['',
+            ['list_item',
+               ['',
+                "A bullet with ",
+                ['emphasis', "bold"],
+                " in a sublist"]]]],
+          ['list_item',
+           ['',
+            "A bullet with ",
+            ['code',
+             ['', "code"]],
+            " in the first list"]]]]
 
-#     result = pg.parse_string(data, nested_list)
-#     assert expected == result
+    result = pg.parse_string(data, nested_list)
+    assert expected == result
 
-#     expected_html = """
-# <ol>
-#   <li>
-#     A numbered bullet
-#   </li>
-#   <ol>
-#     <li>
-#       A bullet in a sublist
-#     </li>
-#     <li>
-#       A bullet with <strong>bold</strong> in a sublist
-#     </li>
-#   </ol>
-#   <li>
-#     A bullet with some <code>code</code> in the first list
-#   </li>
-# </ol>"""
+    expected_html = """
+<ol>
+  <li>
+    A numbered bullet
+  </li>
+  <ol>
+    <li>
+      A bullet in a sublist
+    </li>
+    <li>
+      A bullet with <strong>bold</strong> in a sublist
+    </li>
+  </ol>
+  <li>
+    A bullet with <code>code</code> in the first list
+  </li>
+</ol>""".strip()
 
-#     result = pg.htmlise(expected)
-#     assert result == expected_html
+    result = pg.htmlise(expected)
+    assert result == expected_html

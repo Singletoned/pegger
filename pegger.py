@@ -276,42 +276,40 @@ lookups = {
 
 spans = set(["strong", "code"])
 
-def make_tag(data, depth=0):
-    indent = "  " * depth
+def indent_tags(data):
+    result = []
+    for item in data:
+        result.append("  "+item)
+    return result
+
+def make_tag(data, depth=0, inline=False):
     head, rest = data[0], data[1:]
+    if head in spans:
+        inline = True
     tag = lookups[head]
+    if tag is None:
+        sub_depth = depth
+    else:
+        sub_depth = depth + 1
+    indent = "  " * depth
     result = []
     for item in rest:
         if isinstance(item, basestring):
             result.append(item)
         else:
-            result.append(make_tag(item, depth+1))
-    content = "".join(result)
-    if content.strip().startswith("<"):
-        start_tag = "<%s>" % tag + "\n"
-        end_tag = "</%s>" % tag + "\n"
-        content = content + indent
-    else:
-        start_tag = "<%s>" % tag
-        end_tag = "</%s>" % tag + "\n"
-    return "%s%s%s" % (start_tag, content, end_tag)
+            if lookups[item[0]] in spans:
+                inline = True
+                result.extend(make_tag(item, sub_depth, inline))
+            else:
+                result.extend(make_tag(item, sub_depth, inline))
+    if tag and not inline:
+        result = indent_tags(result)
+    if tag:
+        result = ["<%s>" % tag] + result
+        result.append("</%s>" % tag)
+    if inline:
+        return ["".join(result)]
+    return result
 
 def htmlise(node, depth=0):
-    head, rest = node[0], node[1:]
-    result = []
-    tag = lookups[head]
-    for item in rest:
-        if tag == None:
-            sub_depth = depth
-        else:
-            sub_depth = depth + 1
-        if isinstance(item, basestring):
-            result.append("\n" + ("  " * (sub_depth)) + item)
-        else:
-            text = htmlise(item, sub_depth)
-            result.append(text)
-    if tag:
-        start_tag = "\n" + ("  " * depth) + "<%s>" % tag
-        end_tag = "\n" + ("  " * depth) + "</%s>" % tag
-        result = [start_tag] + result + [end_tag]
-    return "".join(result)
+    return "\n".join(make_tag(node))
