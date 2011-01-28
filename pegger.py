@@ -282,16 +282,11 @@ def indent_tags(data):
         result.append("  "+item)
     return result
 
-def make_tag(data, depth=0, inline=False):
+def make_tag(data, inline=False):
     head, rest = data[0], data[1:]
     if head in spans:
         inline = True
     tag = lookups[head]
-    if tag is None:
-        sub_depth = depth
-    else:
-        sub_depth = depth + 1
-    indent = "  " * depth
     result = []
     for item in rest:
         if isinstance(item, basestring):
@@ -299,12 +294,12 @@ def make_tag(data, depth=0, inline=False):
         else:
             if lookups[item[0]] in spans:
                 inline = True
-                result.extend(make_tag(item, sub_depth, inline))
+                result.extend(make_tag(item, inline))
             else:
-                result.extend(make_tag(item, sub_depth, inline))
-    if tag and not inline:
-        result = indent_tags(result)
+                result.extend(make_tag(item, inline))
     if tag:
+        if not inline:
+            result = indent_tags(result)
         result = ["<%s>" % tag] + result
         result.append("</%s>" % tag)
     if inline:
