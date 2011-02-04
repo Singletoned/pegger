@@ -193,8 +193,10 @@ def match_indented(text, pattern, name):
     if text.startswith("\n"):
         text = text[1:]
     else:
+        # This isn't the begining of a line
         raise NoPatternFound
     indent = ""
+    # Find the current level of indentation
     for char in text:
         if char == " ":
             indent = indent + char
