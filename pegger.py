@@ -53,7 +53,7 @@ class Many(OptionsMatcher):
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
     letters = string.uppercase + string.lowercase + " .,"
-    
+
     def __init__(self, letters=None):
         if letters:
             self.letters = letters
@@ -228,7 +228,6 @@ def match_indented(text, pattern, name):
     else:
         return indented_match, rest
 
-    
 matchers = {
     str: match_text,
     unicode: match_text,
