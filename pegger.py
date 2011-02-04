@@ -295,8 +295,15 @@ def make_block(head, rest):
     start_tag = "<%s>" % tag
     end_tag = "</%s>" % tag
     content = []
+    if (rest[0][0] == 'plain') or (isinstance(rest[0], basestring)):
+        single_line = True
+    else:
+        single_line = False
+    content = []
     for item in rest:
         content.extend(do_render(item))
+    if single_line:
+        content = ["".join(content)]
     content = indent_tags(content)
     return [start_tag] + content + [end_tag]
 

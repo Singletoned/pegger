@@ -670,15 +670,11 @@ def test_htmlise_2():
       A bullet in a sublist
     </li>
     <li>
-      A bullet with 
-      <strong>bold</strong>
-       in a sublist
+      A bullet with <strong>bold</strong> in a sublist
     </li>
   </ol>
   <li>
-    A bullet with 
-    <code>code</code>
-     in the first list
+    A bullet with <code>code</code> in the first list
   </li>
 </ol>""".strip()
 
