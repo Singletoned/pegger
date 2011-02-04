@@ -118,7 +118,10 @@ def match_tuple(text, pattern, name):
     for sub_pattern in pattern:
         match, rest = do_parse(rest, sub_pattern)
         if match:
-            result.append(match)
+            if not match[0]:
+                result.extend(match[1:])
+            else:
+                result.append(match)
     return (result, rest)
 
 def match_ignore(text, pattern, name):
@@ -318,7 +321,7 @@ def make_tagless(head, rest):
 def make_anchor(head, rest):
     link_text, link_url = rest
     link_text = do_render(link_text)
-    link_url = link_url[1][1]
+    link_url = link_url[1]
     link_template = '''<a href="%s">%s</a>'''
     result = link_template % (link_url, "".join(link_text))
     return [result]

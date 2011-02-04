@@ -417,7 +417,7 @@ def test_optional():
     result = pg.parse_string("abc", body)
     expected = [
         'body',
-        ['', "a"],
+        "a",
         ['letters', "bc"]]
     assert expected == result
 
@@ -455,9 +455,8 @@ def test_indented():
     expected = [
         'nested_list',
         ['list_item', "A bullet"],
-        ['',
-         ['nested_list',
-          ['list_item', "A bullet in a sublist"]]]]
+        ['nested_list',
+         ['list_item', "A bullet in a sublist"]]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result
@@ -472,12 +471,10 @@ def test_indented():
     expected = [
         'nested_list',
         ['list_item', "A bullet"],
-        ['',
-         ['nested_list',
-          ['list_item', "A bullet in a sublist"],
-          ['',
-           ['list_item', "Another bullet in a sublist"]]],
-         ['list_item', "Another bullet in the first list"]]]
+        ['nested_list',
+         ['list_item', "A bullet in a sublist"],
+         ['list_item', "Another bullet in a sublist"]],
+        ['list_item', "Another bullet in the first list"]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result
@@ -646,24 +643,19 @@ def test_htmlise_2():
 
     expected = [
         'nested_list',
+       ['list_item',
+        "A numbered bullet"],
+        ['nested_list',
          ['list_item',
-           ['', "A numbered bullet"]],
-         ['',
-          ['nested_list',
-           ['list_item',
-              ['', "A bullet in a sublist"]],
-           ['',
-            ['list_item',
-               ['',
-                "A bullet with ",
-                ['emphasis', "bold"],
-                " in a sublist"]]]],
-          ['list_item',
-           ['',
-            "A bullet with ",
-            ['code',
-             ['', "code"]],
-            " in the first list"]]]]
+          "A bullet in a sublist"],
+         ['list_item',
+          "A bullet with ",
+          ['emphasis', "bold"],
+          " in a sublist"]],
+        ['list_item',
+         "A bullet with ",
+         ['code', "code"],
+         " in the first list"]]
 
     result = pg.parse_string(data, nested_list)
     assert expected == result
@@ -715,7 +707,7 @@ def test_htmlise_link():
         'link',
         ['link_text', "a link to Google"],
         ['link_url',
-         ['', "http://www.google.com"]]]
+         "http://www.google.com"]]
     result = pg.parse_string(data, link)
     assert expected == result
 
