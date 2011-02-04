@@ -279,6 +279,9 @@ lookups = {
     'link_text': None,
     'link_url': None,
     'link': "a",
+    'paragraph': "p",
+    'title_level_1': "h1",
+    'title_level_2': "h2",
     }
 
 def indent_tags(data):
@@ -335,6 +338,11 @@ tag_funcs = {
     'plain': make_span,
     'link': make_anchor,
     'link_text': make_span,
+    'body': make_block,
+    'numbered_bullet': make_block,
+    'paragraph': make_block,
+    'title_level_1': make_block,
+    'title_level_2': make_block,
     }
 
 def do_render(data):
