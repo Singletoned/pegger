@@ -517,6 +517,59 @@ def test_reprs():
     assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
     assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"
 
+def test_make_block():
+    data = ['list_item', "blah, blah"]
+    expected = [
+        "<li>",
+        "  blah, blah",
+        "</li>"]
+    result = pg.make_block(data[0], data[1:])
+    assert expected == result
+
+    data = [
+        'ordered_list',
+        ['list_item', "A bullet"],
+        ['list_item', "Another bullet"]]
+    expected = [
+        "<ol>",
+        "  <li>",
+        "    A bullet",
+        "  </li>",
+        "  <li>",
+        "    Another bullet",
+        "  </li>",
+        "</ol>"]
+    result = pg.make_block(data[0], data[1:])
+    assert expected == result
+
+def test_make_span():
+    data = ['emphasis', "some bold"]
+    expected = ["<strong>some bold</strong>"]
+    result = pg.make_span(data[0], data[1:])
+    assert expected == result
+
+    data = [
+        'plain',
+        "A paragraph with ",
+        ['emphasis', "some bold"],
+        " and ",
+        ['code', "code"],
+        " in it"]
+    expected = ["A paragraph with <strong>some bold</strong> and <code>code</code> in it"]
+    result = pg.make_span(data[0], data[1:])
+    assert expected == result
+
+def test_do_render():
+    data = [
+        'list_item',
+        ['emphasis',
+         "some bold"]]
+    expected = [
+        "<li>",
+        "  <strong>some bold</strong>",
+        "</li>"]
+    result = pg.do_render(data)
+    assert expected == result
 
 def test_htmlise():
     data = ['list_item', "A bullet"]
@@ -539,17 +592,9 @@ def test_htmlise():
     result = pg.htmlise(data)
     assert expected == result
 
-def test_make_tag():
-    expected = """
-<li>
-  A bullet
-</li>""".strip()
-    result = pg.htmlise(['list_item', "A bullet"])
-    assert expected == result
-
     data = [
         'list_item',
-        ['',
+        ['plain',
          "A bullet with some ",
          ['emphasis',
           "bold"],
@@ -561,15 +606,6 @@ def test_make_tag():
     result = pg.htmlise(data)
     assert expected == result
 
-    expected = """
-<ol>
-  <li>
-    A bullet
-  </li>
-</ol>
-""".strip()
-    result = pg.htmlise(['ordered_list', ['list_item', "A bullet"]])
-    assert expected == result
 
 def test_htmlise_2():
     def list_item():
@@ -642,13 +678,55 @@ def test_htmlise_2():
       A bullet in a sublist
     </li>
     <li>
-      A bullet with <strong>bold</strong> in a sublist
+      A bullet with 
+      <strong>bold</strong>
+       in a sublist
     </li>
   </ol>
   <li>
-    A bullet with <code>code</code> in the first list
+    A bullet with 
+    <code>code</code>
+     in the first list
   </li>
 </ol>""".strip()
 
     result = pg.htmlise(expected)
     assert result == expected_html
+
+
+def test_htmlise_link():
+    def link():
+        return (link_text, link_url)
+
+    def link_text():
+        return (
+            pg.Ignore("["),
+            pg.Words(),
+            pg.Ignore("]"))
+
+    def link_url():
+        return (
+            pg.Ignore("("),
+            pg.Not(")"),
+            pg.Ignore(")"))
+
+    data = "[a link to Google](http://www.google.com)"
+    expected = [
+        'link',
+        ['link_text', "a link to Google"],
+        ['link_url',
+         ['', "http://www.google.com"]]]
+    result = pg.parse_string(data, link)
+    assert expected == result
+
+    expected_html = ['''
+    <a href="http://www.google.com">a link to Google</a>
+    '''.strip()]
+    result = pg.make_anchor(expected[0], expected[1:])
+    assert expected_html == result
+
+    expected_html = '''
+    <a href="http://www.google.com">a link to Google</a>
+    '''.strip()
+    result = pg.htmlise(expected)
+    assert expected_html == result

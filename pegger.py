@@ -272,9 +272,10 @@ lookups = {
     'plain': None,
     'emphasis': "strong",
     'code': "code",
+    'link_text': None,
+    'link_url': None,
+    'link': "a",
     }
-
-spans = set(["strong", "code"])
 
 def indent_tags(data):
     result = []
@@ -282,29 +283,63 @@ def indent_tags(data):
         result.append("  "+item)
     return result
 
-def make_tag(data, inline=False):
-    head, rest = data[0], data[1:]
-    if head in spans:
-        inline = True
+def make_block(head, rest):
     tag = lookups[head]
-    result = []
+    start_tag = "<%s>" % tag
+    end_tag = "</%s>" % tag
+    content = []
     for item in rest:
-        if isinstance(item, basestring):
-            result.append(item)
-        else:
-            if lookups[item[0]] in spans:
-                inline = True
-                result.extend(make_tag(item, inline))
-            else:
-                result.extend(make_tag(item, inline))
+        content.extend(do_render(item))
+    content = indent_tags(content)
+    return [start_tag] + content + [end_tag]
+
+def make_span(head, rest):
+    tag = lookups[head]
     if tag:
-        if not inline:
-            result = indent_tags(result)
-        result = ["<%s>" % tag] + result
-        result.append("</%s>" % tag)
-    if inline:
-        return ["".join(result)]
-    return result
+        start_tag = "<%s>" % tag
+        end_tag = "</%s>" % tag
+    else:
+        start_tag = ""
+        end_tag = ""
+    content = []
+    for item in rest:
+        content.extend(do_render(item))
+    content = "".join(content)
+    return ["%s%s%s" % (start_tag, content, end_tag)]
+
+def make_tagless(head, rest):
+    content = []
+    for item in rest:
+        content.extend(do_render(item))
+    return content
+
+def make_anchor(head, rest):
+    link_text, link_url = rest
+    link_text = do_render(link_text)
+    link_url = link_url[1][1]
+    link_template = '''<a href="%s">%s</a>'''
+    result = link_template % (link_url, "".join(link_text))
+    return [result]
+
+tag_funcs = {
+    'list_item': make_block,
+    'emphasis': make_span,
+    'ordered_list': make_block,
+    'code': make_span,
+    '': make_tagless,
+    'nested_list': make_block,
+    'plain': make_span,
+    'link': make_anchor,
+    'link_text': make_span,
+    }
+
+def do_render(data):
+    if isinstance(data, basestring):
+        return [data]
+    else:
+        head, rest = data[0], data[1:]
+        func = tag_funcs[head]
+        return func(head, rest)
 
 def htmlise(node, depth=0):
-    return "\n".join(make_tag(node))
+    return "\n".join(do_render(node))
