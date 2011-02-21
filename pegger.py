@@ -318,6 +318,8 @@ lookups = {
     'paragraph': "p",
     'title_level_1': "h1",
     'title_level_2': "h2",
+    'code_block': "code",
+    'code_line': None,
     }
 
 def indent_tags(data):
@@ -386,6 +388,8 @@ tag_funcs = {
     'paragraph': make_block,
     'title_level_1': make_block,
     'title_level_2': make_block,
+    'code_block': make_block,
+    'code_line': make_span,
     }
 
 def do_render(data):
