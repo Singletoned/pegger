@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import string
+import cgi
 
 class NoPatternFound(Exception):
     pass
@@ -69,6 +70,8 @@ class Optional(PatternMatcher):
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
 
+class Escaped(PatternMatcher):
+    """A matcher that html-escapes the text it matches"""
 
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
@@ -235,6 +238,31 @@ def match_indented(text, pattern, name):
         result = result[0]
     return result, rest
 
+def do_escape(tree):
+    """Recursively html escape a parse tree"""
+    if isinstance(tree, (list, tuple)):
+        name = tree[0]
+        result = [name]
+        for item in tree[1:]:
+            result.append(do_escape(item))
+        return result
+    else:
+        return cgi.escape(tree)
+
+def match_escaped(text, pattern, name):
+    """Match the pattern and html escape the result"""
+    try:
+        match, rest = do_parse(text, pattern.pattern)
+    except NoPatternFound:
+        raise NoPatternFound
+    result = [name]
+    escaped_match = do_escape(match)
+    if (not escaped_match[0]) or (escaped_match[0] == "<lambda>"):
+        result.extend(escaped_match[1:])
+    else:
+        result.append(escaped_match)
+    return result, rest
+
 matchers = {
     str: match_text,
     unicode: match_text,
@@ -247,6 +275,7 @@ matchers = {
     Not: match_not,
     Optional: match_optional,
     Indented: match_indented,
+    Escaped: match_escaped,
     }
 
 def do_parse(text, pattern):

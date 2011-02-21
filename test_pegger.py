@@ -282,6 +282,24 @@ def test_match_indented():
     assert match == expected
     assert rest == "\n"
 
+def test_match_escaped():
+    def html_text():
+        return pg.Many(
+            pg.Words(
+                pg.Words.letters + "</>"))
+
+    escaped_text = pg.Escaped(html_text)
+
+    data = """<p>Some text</p>"""
+
+    expected = [
+        'escaped_text',
+        ['html_text', "&lt;p&gt;Some text&lt;/p&gt;"]]
+
+    match, rest = pg.match_escaped(data, escaped_text, 'escaped_text')
+    assert match == expected
+    assert rest == ""
+
 def test_parse_string_a():
     def letter_a():
         return "a"
@@ -516,6 +534,39 @@ def test_indented():
         ['list_item', "Another bullet in the first list"]]
 
     result = pg.parse_string(data, nested_list)
+    assert expected == result
+
+def test_escaped():
+    def html_text():
+        return pg.Many(
+            pg.Words(
+                pg.Words.letters+"</>"))
+
+    def escaped_text():
+        return pg.Escaped(html_text)
+
+    data = """<p>Some Text</p>"""
+
+    expected = [
+        'escaped_text',
+        ['html_text',
+         "&lt;p&gt;Some Text&lt;/p&gt;"]]
+
+    result = pg.parse_string(data, escaped_text)
+    assert expected == result
+
+    html_text = pg.Many(
+        pg.Words(
+            pg.Words.letters+"</>"))
+
+    def escaped_text():
+        return pg.Escaped(html_text)
+
+    expected = [
+        'escaped_text',
+        "&lt;p&gt;Some Text&lt;/p&gt;"]
+
+    result = pg.parse_string(data, escaped_text)
     assert expected == result
 
 def test_unknown_matcher():
