@@ -236,10 +236,49 @@ def test_match_indented():
 
     expected = [
         'indented_bullets',
-        ['',
-         ['list_item', "A bullet"]]]
+        ['list_item', "A bullet"]]
 
     match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+    assert match == expected
+    assert rest == "\n"
+
+    def paragraph():
+        return (
+            pg.Ignore("\n"),
+            pg.Words())
+
+    indented_text = pg.Indented(paragraph)
+
+    data = """
+    Some text"""
+
+    expected = [
+        'indented_text',
+        ['paragraph', "Some text"]]
+
+    match, rest = pg.match_indented(data, indented_text, 'indented_text')
+    assert match == expected
+    assert rest == "\n"
+
+    # Check indented with unnamed subpattern
+
+    paragraph = (
+        pg.Ignore("\n"),
+        pg.Words())
+
+    indented_text = pg.Indented(paragraph)
+
+    expected = [
+        'indented_text',
+        "Some text"]
+
+    match, rest = pg.match_indented(data, indented_text, 'indented_text')
+    assert match == expected
+    assert rest == "\n"
+
+    # Check indented with unnamed pattern and unnamed subpattern
+
+    match, rest = pg.match_indented(data, indented_text, 'indented_text')
     assert match == expected
     assert rest == "\n"
 

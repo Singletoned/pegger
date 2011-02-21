@@ -224,9 +224,16 @@ def match_indented(text, pattern, name):
         raise NoPatternFound
     rest = indented_rest + "\n" + other_rest
     if name:
-        return ([name, indented_match], rest)
+        result = [name]
     else:
-        return indented_match, rest
+        result = []
+    if (not indented_match[0]) or (indented_match[0] == "<lambda>"):
+        result.extend(indented_match[1:])
+    else:
+        result.append(indented_match)
+    if len(result) == 1:
+        result = result[0]
+    return result, rest
 
 matchers = {
     str: match_text,
