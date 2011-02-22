@@ -153,7 +153,6 @@ def match_many(text, pattern, name):
     result = [name]
     rest = text
     while rest:
-        match_made = False
         for sub_pattern in pattern.options:
             try:
                 match, rest = do_parse(rest, sub_pattern)
@@ -165,7 +164,8 @@ def match_many(text, pattern, name):
                     result.extend(match[1:])
                 else:
                     result.append(match)
-        if not match_made:
+                break
+        else:
             break
     if result == [name]:
         raise NoPatternFound

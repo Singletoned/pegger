@@ -173,6 +173,34 @@ def test_match_many_complex():
     assert match == expected
     assert rest == ""
 
+def test_match_many_specificty():
+    def lettter_a():
+        return "a"
+
+    def lettter_b():
+        return "b"
+
+    def other_letters():
+        return pg.Words()
+
+    match_letters = pg.Many(
+        lettter_a,
+        lettter_b,
+        other_letters)
+
+    data = "abac"
+
+    expected = [
+        'match_letters',
+        ['lettter_a', "a"],
+        ['lettter_b', "b"],
+        ['lettter_a', "a"],
+        ['other_letters', "c"]]
+
+    match, rest = pg.match_many(data, match_letters, 'match_letters')
+    assert match == expected
+    assert rest == ""
+
 def test_match_not():
     not_a = pg.Not("a")
 
