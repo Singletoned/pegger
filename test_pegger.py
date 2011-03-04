@@ -241,6 +241,8 @@ def test_match_optional():
     assert rest == "bc"
 
 def test_match_indented():
+    # Test without optional
+
     def list_item():
         return (
             pg.Ignore("\n* "),
@@ -255,12 +257,21 @@ def test_match_indented():
     expected = [
         'list_item', "A bullet"]
 
-    match, rest = pg.match_tuple(data, list_item(), 'list_item')
-    assert match == expected
-    assert rest == ""
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
 
-    data = """
-  * A bullet"""
+    # Test with optional
+
+    def list_item():
+        return (
+            pg.Ignore("* "),
+            pg.Words())
+
+    indented_bullets = pg.Indented(
+        pg.Many(list_item),
+        optional=True)
+
+    data = """* A bullet"""
 
     expected = [
         'indented_bullets',
@@ -272,13 +283,11 @@ def test_match_indented():
 
     def paragraph():
         return (
-            pg.Ignore("\n"),
             pg.Words())
 
     indented_text = pg.Indented(paragraph)
 
-    data = """
-    Some text"""
+    data = """  Some text"""
 
     expected = [
         'indented_text',
@@ -291,7 +300,6 @@ def test_match_indented():
     # Check indented with unnamed subpattern
 
     paragraph = (
-        pg.Ignore("\n"),
         pg.Words())
 
     indented_text = pg.Indented(paragraph)
@@ -306,9 +314,43 @@ def test_match_indented():
 
     # Check indented with unnamed pattern and unnamed subpattern
 
-    match, rest = pg.match_indented(data, indented_text, 'indented_text')
+    expected = [None, "Some text"]
+
+    match, rest = pg.match_indented(data, indented_text, None)
     assert match == expected
     assert rest == "\n"
+
+def test_match_indented_nested_bullets():
+    def bullet():
+        return (
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
+            pg.Ignore("* "),
+            pg.Words())
+
+    def indented_bullets():
+        return pg.Indented(
+            (bullet,
+             pg.Optional(
+                 indented_bullets,
+                 )),
+            optional=True)
+
+    data = """
+* Line One
+* Line Two
+"""
+
+    expected = [
+        'indented_bullets',
+        ['bullet', "Line One"],
+        ['indented_bullets',
+         ['bullet', "Line Two"]]]
+
+    match, rest = pg.match_indented(data, indented_bullets(), 'indented_bullets')
+    assert match == expected
+    assert rest == "\n\n\n"
 
 def test_match_escaped():
     def html_text():
@@ -509,17 +551,25 @@ def test_optional():
 def test_indented():
     def list_item():
         return (
-            pg.Ignore("\n* "),
+        pg.Ignore(
+            pg.Optional(
+                pg.Many("\n"))),
+            pg.Ignore("* "),
             pg.Words())
 
     def nested_list():
         return (
-            list_item,
-            pg.Optional(
-                pg.Many(
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
+            pg.Indented(
+                (
                     list_item,
-                    pg.Indented(
-                        nested_list))))
+                pg.Optional(
+                    pg.Many(
+                        list_item,
+                        nested_list))),
+                optional=True))
 
     data = """
 * A bullet
@@ -723,14 +773,6 @@ def test_htmlise():
 
 
 def test_htmlise_2():
-    def list_item():
-        return (
-            pg.Ignore("\n* "),
-            pg.Many(
-                pg.Words(),
-                code,
-                emphasis))
-
     def code():
         return (
             pg.Ignore("`"),
@@ -743,14 +785,30 @@ def test_htmlise_2():
             pg.Words(),
             pg.Ignore('*'))
 
+    def list_item():
+        return (
+        pg.Ignore(
+            pg.Optional(
+                pg.Many("\n"))),
+            pg.Ignore("* "),
+            pg.Many(
+                code,
+                emphasis,
+                pg.Words()))
+
     def nested_list():
         return (
-            list_item,
-            pg.Optional(
-                pg.Many(
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
+            pg.Indented(
+                (
                     list_item,
-                    pg.Indented(
-                        nested_list))))
+                pg.Optional(
+                    pg.Many(
+                        list_item,
+                        nested_list))),
+                optional=True))
 
     data = """
 * A numbered bullet
@@ -836,3 +894,49 @@ def test_htmlise_link():
     '''.strip()
     result = pg.htmlise(expected)
     assert expected_html == result
+
+def test_numbered_bullet():
+    def numbered_bullet():
+        return (
+        pg.Ignore(
+            pg.Optional(
+                pg.Many("\n"))),
+            pg.Ignore(pg.Words(letters="1234567890")),
+            pg.Ignore(". "),
+            pg.Words())
+
+    def ordered_list():
+        return (
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
+            pg.Indented(
+                (
+                    numbered_bullet,
+                pg.Optional(
+                    pg.Many(
+                        numbered_bullet,
+                        ordered_list))),
+                optional=True))
+
+    data = """
+1. A numbered bullet
+  2. A bullet in a sublist
+  3. Another bullet in a sublist
+4. Another bullet in the first list
+"""
+
+    expected = [
+        'ordered_list',
+        ['numbered_bullet',
+         "A numbered bullet"],
+        ['ordered_list',
+         ['numbered_bullet',
+          "A bullet in a sublist"],
+         ['numbered_bullet',
+          "Another bullet in a sublist"]],
+        ['numbered_bullet',
+         "Another bullet in the first list"]]
+
+    result = pg.parse_string(data, ordered_list)
+    assert expected == result

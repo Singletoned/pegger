@@ -69,6 +69,10 @@ class Optional(PatternMatcher):
 
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
+    def __init__(self, pattern, optional=False):
+        self.pattern = pattern
+        self.optional = optional
+
 
 class Escaped(PatternMatcher):
     """A matcher that html-escapes the text it matches"""
@@ -194,49 +198,52 @@ def match_optional(text, pattern, name):
     except NoPatternFound:
         return ([], text)
 
-def match_indented(text, pattern, name):
-    """Remove indentation before matching"""
-    if text.startswith("\n"):
-        text = text[1:]
-    else:
-        # This isn't the begining of a line
-        raise NoPatternFound
+def _get_current_indentation(text):
+    "Finds the current number of spaces at the start"
     indent = ""
-    # Find the current level of indentation
     for char in text:
         if char == " ":
             indent = indent + char
         else:
-            break
-    if not indent:
+            return indent
+    return indent
+
+def match_indented(text, pattern, name):
+    """Remove indentation before matching"""
+    indent = _get_current_indentation(text)
+    if (not indent) and (not pattern.optional):
         raise NoPatternFound
     lines = text.split("\n")
     other_lines = list(lines)
-    indented_lines = []
-    for line in lines:
-        if line.startswith(indent):
-            unindented_line = other_lines.pop(0)[len(indent):]
-            indented_lines.append(unindented_line)
-        else:
-            break
-    indented_text = "\n" + "\n".join(indented_lines)
+    indented_lines = _get_indented_lines(lines, indent, other_lines)
+    indented_text = "\n".join(indented_lines)
     other_rest = "\n".join(other_lines)
     try:
         indented_match, indented_rest = do_parse(indented_text, pattern.pattern)
     except NoPatternFound:
         raise NoPatternFound
     rest = indented_rest + "\n" + other_rest
-    if name:
-        result = [name]
-    else:
-        result = []
-    if (not indented_match[0]) or (indented_match[0] == "<lambda>"):
-        result.extend(indented_match[1:])
-    else:
-        result.append(indented_match)
+    result = [name]
+    _process_indented_match(indented_match, result)
     if len(result) == 1:
         result = result[0]
     return result, rest
+
+def _get_indented_lines(lines, indent, other_lines):
+    indented_lines = []
+    for line in lines:
+        if line.startswith(indent):
+            unindented_line = other_lines.pop(0)[len(indent):]
+            indented_lines.append(unindented_line)
+        else:
+            return indented_lines
+    return indented_lines
+
+def _process_indented_match(match, result):
+    if (not match[0]) or (match[0] == "<lambda>"):
+        result.extend(match[1:])
+    else:
+        result.append(match)
 
 def do_escape(tree):
     """Recursively html escape a parse tree"""
