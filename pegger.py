@@ -327,6 +327,8 @@ lookups = {
     'title_level_2': "h2",
     'code_block': "code",
     'code_line': None,
+    'unordered_list': "ul",
+    'bullet': "li",
     }
 
 def indent_tags(data):
@@ -397,6 +399,8 @@ tag_funcs = {
     'title_level_2': make_block,
     'code_block': make_block,
     'code_line': make_span,
+    'unordered_list': make_block,
+    'bullet': make_block,
     }
 
 def do_render(data):
