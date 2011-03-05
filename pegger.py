@@ -47,6 +47,10 @@ class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
 
 
+class AllOf(OptionsMatcher):
+    """A matcher that matches the all of the patterns given"""
+
+
 class Many(OptionsMatcher):
     """A matcher that repeatedly matches any of the options"""
 
@@ -118,11 +122,11 @@ def match_text(text, pattern, name):
     else:
         raise NoPatternFound
 
-def match_tuple(text, pattern, name):
-    "Match each of the patterns in the tuple in turn"
+def match_all_of(text, pattern, name):
+    "Match each of the patterns in pattern"
     result = [name]
     rest = text
-    for sub_pattern in pattern:
+    for sub_pattern in pattern.options:
         match, rest = do_parse(rest, sub_pattern)
         if match:
             if not match[0]:
@@ -273,7 +277,7 @@ def match_escaped(text, pattern, name):
 matchers = {
     str: match_text,
     unicode: match_text,
-    tuple: match_tuple,
+    AllOf: match_all_of,
     Some: match_some,
     Words: match_words,
     Ignore: match_ignore,

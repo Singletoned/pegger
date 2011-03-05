@@ -53,40 +53,40 @@ def test_match_words():
     assert rest == ""
 
 
-def test_match_tuple():
+def test_match_all_of():
     def letter_a():
         return "a"
 
     def letter_b():
         return "b"
 
-    word_ab = (letter_a, letter_b)
+    word_ab = pg.AllOf(letter_a, letter_b)
 
-    match, rest = pg.match_tuple("ab", word_ab, "word_ab")
+    match, rest = pg.match_all_of("ab", word_ab, "word_ab")
     assert match == ['word_ab', ['letter_a', "a"], ['letter_b', "b"]]
     assert rest == ""
 
-    word_abc = (letter_a, pg.Words())
+    word_abc = pg.AllOf(letter_a, pg.Words())
 
     expected = ['word_ab', ['letter_a', "a"], "bc"]
-    match, rest = pg.match_tuple("abc", word_abc, "word_ab")
+    match, rest = pg.match_all_of("abc", word_abc, "word_ab")
     assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_tuple("abc!", word_abc, "")
+    match, rest = pg.match_all_of("abc!", word_abc, "")
     assert match == ['', ['letter_a', "a"], "bc"]
     assert rest == "!"
 
-    emphasis = (
+    emphasis = pg.AllOf(
         lambda: pg.Ignore("*"),
         lambda: pg.Words(),
         lambda: pg.Ignore("*"))
 
-    match, rest = pg.match_tuple("*abc*", emphasis, "emphasis")
+    match, rest = pg.match_all_of("*abc*", emphasis, "emphasis")
     assert match == ['emphasis', "abc"]
 
     with py.test.raises(pg.NoPatternFound):
-        result = pg.match_tuple("cab", word_ab, "word_ab")
+        result = pg.match_all_of("cab", word_ab, "word_ab")
 
 def test_match_ignore():
     ignore_a = pg.Ignore("a")
@@ -96,7 +96,7 @@ def test_match_ignore():
     assert rest == ""
 
     ignore_a = pg.Ignore(
-        (pg.Optional("#"),
+        pg.AllOf(pg.Optional("#"),
          "abc"))
 
     match, rest = pg.match_ignore("#abc", ignore_a, "ignore_a")
@@ -108,7 +108,7 @@ def test_match_ignore():
 
 def test_match_one_of():
     def emphasis():
-        return (
+        return pg.AllOf(
             lambda: pg.Ignore("*"),
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
@@ -154,7 +154,7 @@ def test_match_many_simple():
 
 def test_match_many_complex():
     def emphasis():
-        return (
+        return pg.AllOf(
             lambda: pg.Ignore("*"),
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
@@ -263,7 +263,7 @@ def test_match_indented():
     # Test with optional
 
     def list_item():
-        return (
+        return pg.AllOf(
             pg.Ignore("* "),
             pg.Words())
 
@@ -322,7 +322,7 @@ def test_match_indented():
 
 def test_match_indented_nested_bullets():
     def bullet():
-        return (
+        return pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
@@ -331,10 +331,11 @@ def test_match_indented_nested_bullets():
 
     def indented_bullets():
         return pg.Indented(
-            (bullet,
-             pg.Optional(
-                 indented_bullets,
-                 )),
+            pg.AllOf(
+                bullet,
+                pg.Optional(
+                    indented_bullets,
+                    )),
             optional=True)
 
     data = """
@@ -401,7 +402,7 @@ def test_parse_string_ab():
         return "b"
 
     def word_ab():
-        return (letter_a, letter_b)
+        return pg.AllOf(letter_a, letter_b)
 
     expected = ['word_ab',
                 ['letter_a', "a"],
@@ -434,7 +435,7 @@ def test_parse_string_some_aab():
         return "b"
 
     def word_aab():
-        return (word_a, letter_b)
+        return pg.AllOf(word_a, letter_b)
 
     expected = ['word_aab',
                 ['word_a', "aa"],
@@ -455,7 +456,7 @@ def test_parse_words():
 
 def test_parse_ignore():
     def emphasis():
-        return (
+        return pg.AllOf(
             lambda: pg.Ignore("*"),
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
@@ -465,7 +466,7 @@ def test_parse_ignore():
 
 def test_parse_one_of():
     def emphasis():
-        return (
+        return pg.AllOf(
             lambda: pg.Ignore("*"),
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
@@ -486,7 +487,7 @@ def test_parse_one_of():
 
 def test_parse_many():
     def emphasis():
-        return (
+        return pg.AllOf(
             lambda: pg.Ignore("*"),
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
@@ -539,7 +540,7 @@ def test_optional():
         return pg.Words()
 
     def body():
-        return (optional_a, letters)
+        return pg.AllOf(optional_a, letters)
 
     result = pg.parse_string("abc", body)
     expected = [
@@ -550,20 +551,20 @@ def test_optional():
 
 def test_indented():
     def list_item():
-        return (
-        pg.Ignore(
-            pg.Optional(
-                pg.Many("\n"))),
+        return pg.AllOf(
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
             pg.Ignore("* "),
             pg.Words())
 
     def nested_list():
-        return (
+        return pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
             pg.Indented(
-                (
+                pg.AllOf(
                     list_item,
                 pg.Optional(
                     pg.Many(
@@ -774,22 +775,22 @@ def test_htmlise():
 
 def test_htmlise_2():
     def code():
-        return (
+        return pg.AllOf(
             pg.Ignore("`"),
             pg.Not("`"),
             pg.Ignore("`"))
 
     def emphasis():
-        return (
+        return pg.AllOf(
             pg.Ignore('*'),
             pg.Words(),
             pg.Ignore('*'))
 
     def list_item():
-        return (
-        pg.Ignore(
-            pg.Optional(
-                pg.Many("\n"))),
+        return pg.AllOf(
+            pg.Ignore(
+                pg.Optional(
+                    pg.Many("\n"))),
             pg.Ignore("* "),
             pg.Many(
                 code,
@@ -797,17 +798,17 @@ def test_htmlise_2():
                 pg.Words()))
 
     def nested_list():
-        return (
+        return pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
             pg.Indented(
-                (
+                pg.AllOf(
                     list_item,
-                pg.Optional(
-                    pg.Many(
-                        list_item,
-                        nested_list))),
+                    pg.Optional(
+                        pg.Many(
+                            list_item,
+                            nested_list))),
                 optional=True))
 
     data = """
@@ -860,16 +861,16 @@ def test_htmlise_2():
 
 def test_htmlise_link():
     def link():
-        return (link_text, link_url)
+        return pg.AllOf(link_text, link_url)
 
     def link_text():
-        return (
+        return pg.AllOf(
             pg.Ignore("["),
             pg.Words(),
             pg.Ignore("]"))
 
     def link_url():
-        return (
+        return pg.AllOf(
             pg.Ignore("("),
             pg.Not(")"),
             pg.Ignore(")"))
@@ -897,7 +898,7 @@ def test_htmlise_link():
 
 def test_numbered_bullet():
     def numbered_bullet():
-        return (
+        return pg.AllOf(
         pg.Ignore(
             pg.Optional(
                 pg.Many("\n"))),
@@ -906,17 +907,17 @@ def test_numbered_bullet():
             pg.Words())
 
     def ordered_list():
-        return (
+        return pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
             pg.Indented(
-                (
+                pg.AllOf(
                     numbered_bullet,
-                pg.Optional(
-                    pg.Many(
-                        numbered_bullet,
-                        ordered_list))),
+                    pg.Optional(
+                        pg.Many(
+                            numbered_bullet,
+                            ordered_list))),
                 optional=True))
 
     data = """
