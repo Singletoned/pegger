@@ -341,6 +341,11 @@ def indent_tags(data):
         result.append("  "+item)
     return result
 
+def make_void_element(head, rest):
+    tag = lookups[head]
+    tag = "<%s/>" % tag
+    return [tag]
+
 def make_block(head, rest):
     tag = lookups[head]
     start_tag = "<%s>" % tag

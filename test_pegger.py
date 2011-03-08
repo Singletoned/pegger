@@ -708,6 +708,12 @@ def test_make_block():
     result = pg.make_block(data[0], data[1:])
     assert expected == result
 
+def test_make_void_element():
+    data = ['horizontal_rule', ""]
+    expected = ['<hr/>']
+    result = pg.make_void_element(data[0], data[1:])
+    assert expected == result
+
 def test_make_span():
     data = ['emphasis', "some bold"]
     expected = ["<strong>some bold</strong>"]
