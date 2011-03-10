@@ -201,6 +201,39 @@ def test_match_many_specificty():
     assert match == expected
     assert rest == ""
 
+def test_filter_match():
+    data = ['foo', "bar", "baz"]
+    expected = ['foo', "barbaz"]
+    result = pg.filter_match(data)
+    assert result == expected
+
+    data = ['foo', "bar", "baz", ['flib', "flamble"], "bar", "ington"]
+    expected = ['foo', "barbaz", ['flib', "flamble"], "barington"]
+    result = pg.filter_match(data)
+    assert result == expected
+
+def test_match_count_of():
+    three_dashes = pg.CountOf(3, "-")
+
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_count_of("--", three_dashes, 'three_dashes')
+
+    expected = [
+        'three_dashes',
+        "---"]
+
+    match, rest = pg.match_count_of("---", three_dashes, 'three_dashes')
+    assert match == expected
+    assert rest == ""
+
+    expected = [
+        'three_dashes',
+        "---"]
+
+    match, rest = pg.match_count_of("----", three_dashes, 'three_dashes')
+    assert match == expected
+    assert rest == "-"
+
 def test_match_not():
     not_a = pg.Not("a")
 

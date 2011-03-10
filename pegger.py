@@ -31,6 +31,12 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
+class CountOf(Matcher):
+    """A matcher that matches count items"""
+    def __init__(self, count, pattern):
+        self.count = count
+        self.pattern = pattern
+
 class Some(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
 
@@ -155,6 +161,39 @@ def match_one_of(text, pattern, name):
                 match = match[1]
             return (match, rest)
     raise NoPatternFound
+
+def match_count_of(text, pattern, name):
+    result = [name]
+    rest = text
+    for i in range(pattern.count):
+        try:
+            match, rest = do_parse(rest, pattern.pattern)
+        except NoPatternFound:
+            raise NoPatternFound("Only %s of the given pattern were found" % i)
+        else:
+            if match:
+                if (not match[0]) or (match[0] == "<lambda>"):
+                    result.extend(match[1:])
+                else:
+                    result.append(match)
+    return (filter_match(result), rest)
+
+def filter_match(match):
+    "Concatenates consecutive characters"
+    result = []
+    result.append(match[0])
+    submatches = []
+    for item in match[1:]:
+        if isinstance(item, basestring):
+            submatches.append(item)
+        else:
+            if submatches:
+                result.append("".join(submatches))
+                submatches = []
+                result.append(item)
+    if submatches:
+        result.append("".join(submatches))
+    return result
 
 def match_many(text, pattern, name):
     """Repeatedly match any of the given patterns"""
