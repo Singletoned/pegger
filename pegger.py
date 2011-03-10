@@ -373,6 +373,7 @@ lookups = {
     'unordered_list': "ul",
     'bullet': "li",
     'horizontal_rule': "hr",
+    'blockquote': "blockquote",
     }
 
 def indent_tags(data):
@@ -450,7 +451,8 @@ tag_funcs = {
     'code_line': make_span,
     'unordered_list': make_block,
     'bullet': make_block,
-    'horizontal_rule': make_void_element
+    'horizontal_rule': make_void_element,
+    'blockquote': make_block,
     }
 
 def do_render(data):
