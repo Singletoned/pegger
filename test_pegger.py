@@ -278,6 +278,10 @@ def test_match_not():
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_not("abc", not_a, 'not_a')
 
+    match, rest = pg.match_not("bcd", not_a, 'not_a')
+    assert match == ['not_a', "b"]
+    assert rest == "cd"
+
 def test_match_optional():
     optional_a = pg.Optional("a")
 
@@ -582,7 +586,7 @@ def test_not():
         return pg.Not("a")
 
     result = pg.parse_string("bc", not_a)
-    assert result == ['not_a', 'bc']
+    assert result == ['not_a', 'b']
 
     with py.test.raises(pg.NoPatternFound):
         result = pg.parse_string("a", not_a)

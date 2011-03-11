@@ -229,19 +229,11 @@ def match_many(text, pattern, name):
         return (result, rest)
 
 def match_not(text, pattern, name):
-    """Match any string that is not the pattern"""
-    match = []
-    rest = text
-    while rest:
-        if rest.startswith(pattern.pattern):
-            break
-        else:
-            match.append(rest[0])
-            rest = rest[1:]
-    if not match:
+    """Match a character if text doesn't start with pattern"""
+    if text.startswith(pattern.pattern):
         raise NoPatternFound
     else:
-        return ([name, "".join(match)], rest)
+        return ([name, text[0]], text[1:])
 
 def match_optional(text, pattern, name):
     """Match pattern if it's there"""
