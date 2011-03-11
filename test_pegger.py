@@ -234,6 +234,36 @@ def test_match_count_of():
     assert match == expected
     assert rest == "-"
 
+def test_match_insert():
+    insert_a = pg.Insert("a")
+
+    expected = ['insert_a', "a"]
+
+    match, rest = pg.match_insert("", insert_a, 'insert_a')
+    assert match == expected
+    assert rest == ""
+
+    joined_lines = pg.AllOf(
+        pg.Ignore("\n"),
+        pg.Words(),
+        pg.Insert(" : "),
+        pg.Ignore("\n"),
+        pg.Words())
+
+    data = """
+flamble
+floosit"""
+
+    expected = [
+        "joined_lines",
+        'flamble',
+        " : ",
+        'floosit']
+
+    match, rest = pg.match_all_of(data, joined_lines, 'joined_lines')
+    assert match == expected
+    assert rest == ""
+
 def test_match_not():
     not_a = pg.Not("a")
 

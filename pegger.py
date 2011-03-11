@@ -37,6 +37,12 @@ class CountOf(Matcher):
         self.count = count
         self.pattern = pattern
 
+
+class Insert(Matcher):
+    """A matcher that inserts some text into the result"""
+    def __init__(self, text):
+        self.text = text
+
 class Some(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
 
@@ -177,6 +183,9 @@ def match_count_of(text, pattern, name):
                 else:
                     result.append(match)
     return (filter_match(result), rest)
+
+def match_insert(text, pattern, name):
+    return ([name, pattern.text], text)
 
 def filter_match(match):
     "Concatenates consecutive characters"
@@ -326,6 +335,7 @@ matchers = {
     Optional: match_optional,
     Indented: match_indented,
     Escaped: match_escaped,
+    Insert: match_insert,
     }
 
 def do_parse(text, pattern):
