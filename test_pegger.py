@@ -212,6 +212,27 @@ def test_match_many_specificty():
     assert match == expected
     assert rest == ""
 
+def test_match_join():
+    three_times_a = pg.Join(
+        pg.CountOf(
+            3, "a"))
+
+    data = "aaa"
+    expected = ['three_times_a', "aaa"]
+    match, rest = pg.match_join(data, three_times_a, 'three_times_a')
+    assert match == expected
+    assert rest == ""
+
+    not_d = pg.Join(
+        pg.Many(
+            pg.Not("d")))
+
+    data = "abcd"
+    expected = ['not_d', "abc"]
+    match, rest = pg.match_join(data, not_d, 'not_d')
+    assert match == expected
+    assert rest == "d"
+
 def test_filter_match():
     data = ['foo', "bar", "baz"]
     expected = ['foo', "barbaz"]
@@ -231,7 +252,7 @@ def test_match_count_of():
 
     expected = [
         'three_dashes',
-        "---"]
+        "-", "-", "-"]
 
     match, rest = pg.match_count_of("---", three_dashes, 'three_dashes')
     assert match == expected
@@ -239,7 +260,7 @@ def test_match_count_of():
 
     expected = [
         'three_dashes',
-        "---"]
+        "-", "-", "-"]
 
     match, rest = pg.match_count_of("----", three_dashes, 'three_dashes')
     assert match == expected

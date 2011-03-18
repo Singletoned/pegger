@@ -54,6 +54,8 @@ class Ignore(PatternMatcher):
 class Not(PatternMatcher):
     """A matcher that matches any string that isn't the pattern"""
 
+class Join(PatternMatcher):
+    "A matcher that joins together any consecutive strings"
 
 class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
@@ -179,10 +181,23 @@ def match_count_of(text, pattern, name):
                     result.extend(match[1:])
                 else:
                     result.append(match)
-    return (filter_match(result), rest)
+    return (result, rest)
 
 def match_insert(text, pattern, name):
     return ([name, pattern.text], text)
+
+def match_join(text, pattern, name):
+    try:
+        match, rest = do_parse(text, pattern.pattern)
+    except NoPatternFound:
+        raise NoPatternFound
+    result = [name]
+    if (not match[0]) or (match[0] == "<lambda>"):
+        result.extend(match[1:])
+        result = filter_match(result)
+    else:
+        result.append(filter_match(match))
+    return (result, rest)
 
 def filter_match(match):
     "Concatenates consecutive characters"
@@ -325,6 +340,8 @@ matchers = {
     Indented: match_indented,
     Escaped: match_escaped,
     Insert: match_insert,
+    CountOf: match_count_of,
+    Join: match_join,
     }
 
 def do_parse(text, pattern):
