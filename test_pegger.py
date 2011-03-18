@@ -44,6 +44,11 @@ def test_match_words():
     assert match == ['plain', "some words"]
     assert rest == ""
 
+    # Match with no name
+    match, rest = pg.match_words("some words", plain, '')
+    assert match == ['', "some words"]
+    assert rest == ""
+
     match, rest = pg.match_words("some words 123", plain, 'plain')
     assert match == ['plain', "some words "]
     assert rest == "123"
@@ -113,11 +118,8 @@ def test_match_one_of():
             lambda: pg.Words(),
             lambda: pg.Ignore("*"))
 
-    def words():
-        return pg.Words()
-
     phrase = pg.OneOf(
-            words,
+            pg.Words(),
             emphasis)
 
     match, rest = pg.match_one_of("*bold*", phrase, "phrase")
@@ -126,6 +128,15 @@ def test_match_one_of():
 
     with py.test.raises(pg.NoPatternFound):
         match, rest = pg.match_one_of("123", phrase, "phrase")
+
+    match, rest = pg.match_one_of("text", phrase, "phrase")
+    assert match == ['phrase', "text"]
+    assert rest == ""
+
+    # Test match with no name
+    match, rest = pg.match_one_of("text", phrase, "")
+    assert match == ['', "text"]
+    assert rest == ""
 
 def test_match_many_simple():
     def a():

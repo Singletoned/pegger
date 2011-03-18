@@ -120,10 +120,7 @@ def match_words(text, pattern, name):
             break
     if not match:
         raise NoPatternFound
-    if not name:
-        return ("".join(match), "".join(rest))
-    else:
-        return ([name, "".join(match)], "".join(rest))
+    return ([name, "".join(match)], "".join(rest))
 
 def match_text(text, pattern, name):
     """If the pattern matches the beginning of the text, parser it and
@@ -163,8 +160,8 @@ def match_one_of(text, pattern, name):
         except NoPatternFound:
             continue
         if match:
-            if (not match) or (match[0] == "<lambda>"):
-                match = match[1]
+            if (not match[0]) or (match[0] == "<lambda>"):
+                match = [name, match[1]]
             return (match, rest)
     raise NoPatternFound
 
