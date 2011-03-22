@@ -786,3 +786,17 @@ def test_reprs():
     assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"
     assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
     assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"
+
+def test_add_match_to_result():
+    def do_test(data):
+        result = []
+        expected = ['foo', ['flimmle', 'flammle'], 'bar']
+        pg._add_match_to_result(result, data)
+        assert expected == result
+
+    items = [
+        ['', 'foo', ['flimmle', 'flammle'], 'bar'],
+        ['<lambda>', 'foo', ['flimmle', 'flammle'], 'bar']]
+
+    for item in items:
+        yield do_test, item

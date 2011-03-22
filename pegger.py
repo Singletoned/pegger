@@ -140,10 +140,7 @@ def match_all_of(text, pattern, name):
     for sub_pattern in pattern.options:
         match, rest = do_parse(rest, sub_pattern)
         if match:
-            if not match[0]:
-                result.extend(match[1:])
-            else:
-                result.append(match)
+            _add_match_to_result(result, match)
     return (result, rest)
 
 def match_ignore(text, pattern, name):
@@ -163,10 +160,7 @@ def match_one_of(text, pattern, name):
             continue
         if match:
             result = [name]
-            if (not match[0]) or (match[0] == "<lambda>"):
-                result.extend(match[1:])
-            else:
-                result.append(match)
+            _add_match_to_result(result, match)
             return (result, rest)
     raise NoPatternFound
 
@@ -180,10 +174,7 @@ def match_count_of(text, pattern, name):
             raise NoPatternFound("Only %s of the given pattern were found" % i)
         else:
             if match:
-                if (not match[0]) or (match[0] == "<lambda>"):
-                    result.extend(match[1:])
-                else:
-                    result.append(match)
+                _add_match_to_result(result, match)
     return (result, rest)
 
 def match_insert(text, pattern, name):
@@ -195,11 +186,8 @@ def match_join(text, pattern, name):
     except NoPatternFound:
         raise NoPatternFound
     result = [name]
-    if (not match[0]) or (match[0] == "<lambda>"):
-        result.extend(match[1:])
-        result = filter_match(result)
-    else:
-        result.append(filter_match(match))
+    _add_match_to_result(result, match)
+    result = filter_match(result)
     return (result, rest)
 
 def filter_match(match):
@@ -231,10 +219,7 @@ def match_many(text, pattern, name):
                 continue
             if match:
                 match_made = True
-                if (not match[0]) or (match[0] == "<lambda>"):
-                    result.extend(match[1:])
-                else:
-                    result.append(match)
+                _add_match_to_result(result, match)
                 break
         else:
             break
@@ -283,7 +268,7 @@ def match_indented(text, pattern, name):
         raise NoPatternFound
     rest = indented_rest + "\n" + other_rest
     result = [name]
-    _process_indented_match(indented_match, result)
+    _add_match_to_result(result, indented_match)
     if len(result) == 1:
         result = result[0]
     return result, rest
@@ -297,12 +282,6 @@ def _get_indented_lines(lines, indent, other_lines):
         else:
             return indented_lines
     return indented_lines
-
-def _process_indented_match(match, result):
-    if (not match[0]) or (match[0] == "<lambda>"):
-        result.extend(match[1:])
-    else:
-        result.append(match)
 
 def do_escape(tree):
     """Recursively html escape a parse tree"""
@@ -323,11 +302,15 @@ def match_escaped(text, pattern, name):
         raise NoPatternFound
     result = [name]
     escaped_match = do_escape(match)
-    if (not escaped_match[0]) or (escaped_match[0] == "<lambda>"):
-        result.extend(escaped_match[1:])
-    else:
-        result.append(escaped_match)
+    _add_match_to_result(result, escaped_match)
     return result, rest
+
+def _add_match_to_result(result, match):
+    "If the match has no name, extend the result"
+    if (not match[0]) or (match[0] == "<lambda>"):
+        result.extend(match[1:])
+    else:
+        result.append(match)
 
 matchers = {
     str: match_text,
