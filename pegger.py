@@ -271,7 +271,7 @@ def match_indented(text, pattern, name):
     _add_match_to_result(result, indented_match)
     if len(result) == 1:
         result = result[0]
-    return result, rest
+    return (result, rest)
 
 def _get_indented_lines(lines, indent, other_lines):
     indented_lines = []
@@ -303,7 +303,7 @@ def match_escaped(text, pattern, name):
     result = [name]
     escaped_match = do_escape(match)
     _add_match_to_result(result, escaped_match)
-    return result, rest
+    return (result, rest)
 
 def _add_match_to_result(result, match):
     "If the match has no name, extend the result"
@@ -352,4 +352,4 @@ def get_pattern_info(pattern):
         if pattern_name == "<lambda>":
             pattern_name = ""
     pattern_type = type(pattern)
-    return pattern, pattern_name, pattern_type
+    return (pattern, pattern_name, pattern_type)
