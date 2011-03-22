@@ -162,9 +162,12 @@ def match_one_of(text, pattern, name):
         except NoPatternFound:
             continue
         if match:
+            result = [name]
             if (not match[0]) or (match[0] == "<lambda>"):
-                match = [name, match[1]]
-            return (match, rest)
+                result.extend(match[1:])
+            else:
+                result.append(match)
+            return (result, rest)
     raise NoPatternFound
 
 def match_count_of(text, pattern, name):

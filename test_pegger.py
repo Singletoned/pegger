@@ -112,18 +112,18 @@ def test_match_ignore():
         match, rest = pg.match_ignore("123", ignore_a, "ignore_a")
 
 def test_match_one_of():
-    def emphasis():
-        return pg.AllOf(
-            lambda: pg.Ignore("*"),
-            lambda: pg.Words(),
-            lambda: pg.Ignore("*"))
+    emphasis = pg.AllOf(
+        pg.Ignore("*"),
+        lambda: pg.Many(pg.Not("*")),
+        pg.Ignore("*"))
 
     phrase = pg.OneOf(
             pg.Words(),
             emphasis)
 
+    expected = ['phrase', "b", "o", "l", "d"]
     match, rest = pg.match_one_of("*bold*", phrase, "phrase")
-    assert match == ['emphasis', "bold"]
+    assert match == expected
     assert rest == ""
 
     with py.test.raises(pg.NoPatternFound):
@@ -578,11 +578,13 @@ def test_parse_one_of():
             words,
             emphasis)
 
+    expected = ['phrase', ['emphasis', "bold words"]]
     result = pg.parse_string("*bold words*", phrase)
-    assert result == ['emphasis', "bold words"]
+    assert result == expected
 
+    expected = ['phrase', ['words', "normal words"]]
     result = pg.parse_string("normal words", phrase)
-    assert result == ['words', "normal words"]
+    assert result == expected
 
 def test_parse_many():
     def emphasis():
@@ -603,9 +605,12 @@ def test_parse_many():
         return pg.Many(phrase)
 
     expected = ['body',
-                ['words', 'a phrase with '],
-                ['emphasis', "bold words"],
-                ['words', " in it"]]
+                ['phrase',
+                 ['words', 'a phrase with ']],
+                ['phrase',
+                 ['emphasis', "bold words"]],
+                ['phrase',
+                 ['words', " in it"]]]
 
     result = pg.parse_string("a phrase with *bold words* in it", body)
     assert result == expected
