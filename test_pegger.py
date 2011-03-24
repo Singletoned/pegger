@@ -796,7 +796,8 @@ def test_add_match_to_result():
 
     items = [
         ['', 'foo', ['flimmle', 'flammle'], 'bar'],
-        ['<lambda>', 'foo', ['flimmle', 'flammle'], 'bar']]
+        ['<lambda>', 'foo', ['flimmle', 'flammle'], 'bar'],
+        ['_ignore_me', 'foo', ['flimmle', 'flammle'], 'bar']]
 
     for item in items:
         yield do_test, item

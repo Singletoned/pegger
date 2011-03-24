@@ -308,7 +308,7 @@ def match_escaped(text, pattern, name):
 
 def _add_match_to_result(result, match):
     "If the match has no name, extend the result"
-    if (not match[0]) or (match[0] == "<lambda>"):
+    if (not match[0]) or (match[0] == "<lambda>") or match[0].startswith("_"):
         result.extend(match[1:])
     else:
         result.append(match)
