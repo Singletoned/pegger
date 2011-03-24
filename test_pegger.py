@@ -789,15 +789,15 @@ def test_reprs():
 
 def test_add_match_to_result():
     def do_test(data):
-        result = []
-        expected = ['foo', ['flimmle', 'flammle'], 'bar']
+        expected = ['useful_name', "flimmle", ['sub_item', "flammle"], "flapple"]
+        result = ["useful_name"]
         pg._add_match_to_result(result, data)
         assert expected == result
 
     items = [
-        ['', 'foo', ['flimmle', 'flammle'], 'bar'],
-        ['<lambda>', 'foo', ['flimmle', 'flammle'], 'bar'],
-        ['_ignore_me', 'foo', ['flimmle', 'flammle'], 'bar']]
+        ['', "flimmle", ['sub_item', "flammle"], "flapple"],
+        ['<lambda>', "flimmle", ['sub_item', "flammle"], "flapple"],
+        ['_ignore_me', "flimmle", ['sub_item', "flammle"], "flapple"]]
 
     for item in items:
         yield do_test, item
