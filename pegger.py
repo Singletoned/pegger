@@ -95,6 +95,7 @@ class Indented(PatternMatcher):
 class Escaped(PatternMatcher):
     """A matcher that html-escapes the text it matches"""
 
+
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
     match = []
