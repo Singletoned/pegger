@@ -811,7 +811,9 @@ def test_get_current_indentation():
         (" foo", " "),
         ("  foo", "  "),
         ("\tfoo", "\t"),
-        ("\t\tfoo", "\t\t")]
+        ("\t\tfoo", "\t\t"),
+        (" \tfoo", " "),
+        ("\t foo", "\t")]
 
     for data, expected in items:
         yield do_test, data, expected

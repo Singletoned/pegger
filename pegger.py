@@ -248,7 +248,8 @@ def _get_current_indentation(text):
     indent = ""
     for char in text:
         if char in [" ", "\t"]:
-            indent = indent + char
+            if (not indent) or (char in indent):
+                indent = indent + char
         else:
             return indent
     return indent
