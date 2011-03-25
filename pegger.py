@@ -247,7 +247,7 @@ def _get_current_indentation(text):
     "Finds the current number of spaces at the start"
     indent = ""
     for char in text:
-        if char == " ":
+        if char in [" ", "\t"]:
             indent = indent + char
         else:
             return indent
