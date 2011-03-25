@@ -801,3 +801,15 @@ def test_add_match_to_result():
 
     for item in items:
         yield do_test, item
+
+def test_get_current_indentation():
+    data = " foo"
+    expected = " "
+    result = pg._get_current_indentation(data)
+    assert expected == result
+
+    data = "  foo"
+
+    expected = "  "
+    result = pg._get_current_indentation(data)
+    assert expected == result
