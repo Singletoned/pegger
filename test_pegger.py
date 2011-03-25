@@ -386,17 +386,21 @@ def test_match_indented():
 
     indented_text = pg.Indented(paragraph)
 
-    data = """  Some text"""
+    data_with_spaces = """  Some text"""
+    data_with_tabs = """\tSome text"""
 
     expected = [
         'indented_text',
         ['paragraph', "Some text"]]
 
-    match, rest = pg.match_indented(data, indented_text, 'indented_text')
-    assert match == expected
-    assert rest == "\n"
+    for data in [data_with_spaces, data_with_tabs]:
+        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        assert match == expected
+        assert rest == "\n"
 
     # Check indented with unnamed subpattern
+
+    data = "  Some text"
 
     paragraph = (
         pg.Words())
