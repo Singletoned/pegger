@@ -87,9 +87,10 @@ class Optional(PatternMatcher):
 
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
-    def __init__(self, pattern, optional=False):
+    def __init__(self, pattern, optional=False, initial_indent=None):
         self.pattern = pattern
         self.optional = optional
+        self.initial_indent = initial_indent
 
 
 class Escaped(PatternMatcher):
@@ -245,20 +246,31 @@ def match_optional(text, pattern, name):
     except NoPatternFound:
         return ([], text)
 
-def _get_current_indentation(text):
+def _get_current_indentation(text, pattern=None):
     "Finds the current number of spaces at the start"
-    indent = ""
-    for char in text:
-        if char in [" ", "\t"]:
-            if (not indent) or (char in indent):
-                indent = indent + char
-        else:
-            return indent
-    return indent
+    if pattern and pattern.initial_indent:
+        try:
+            match, rest = do_parse(text, pattern.initial_indent)
+        except NoPatternFound:
+            raise NoPatternFound
+        match = filter_match(match, recursive=True)
+        match = "".join(match[1:])
+        indent = " " * len(match)
+        rest = indent + rest
+        return (indent, rest)
+    else:
+        indent = ""
+        for char in text:
+            if char in [" ", "\t"]:
+                if (not indent) or (char in indent):
+                    indent = indent + char
+            else:
+                return (indent, text)
+        return (indent, text)
 
 def match_indented(text, pattern, name):
     """Remove indentation before matching"""
-    indent = _get_current_indentation(text)
+    indent, text = _get_current_indentation(text, pattern)
     if (not indent) and (not pattern.optional):
         raise NoPatternFound
     lines = text.split("\n")

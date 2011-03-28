@@ -461,6 +461,31 @@ def test_match_indented_nested_bullets():
     assert match == expected
     assert rest == "\n\n\n"
 
+def test_indented_bullet():
+    def paragraph():
+        return pg.AllOf(
+            pg.Ignore(pg.Optional("\n")),
+            pg.Words())
+
+    indented_paragraphs =  pg.Indented(
+        pg.Many(paragraph),
+        initial_indent="*   ")
+
+    data = """
+*   Paragraph One
+    Paragraph Two
+""".strip()
+
+    expected = [
+        'indented_paragraphs',
+        ['paragraph',
+         "Paragraph One"],
+        ['paragraph',
+         "Paragraph Two"]]
+
+    match, rest = pg.match_indented(data, indented_paragraphs, "indented_paragraphs")
+    assert match == expected
+
 def test_match_escaped():
     def html_text():
         return pg.Many(
@@ -811,18 +836,29 @@ def test_add_match_to_result():
     for item in items:
         yield do_test, item
 
+def test_get_current_indentation_initial_indent():
+    indented_text =  pg.Indented(
+        pg.Words(),
+        initial_indent=pg.AllOf("*   "))
+
+    data = "*   foo"
+    expected = ("    ", "    foo")
+    result = pg._get_current_indentation(data, indented_text)
+    assert expected == result
+
 def test_get_current_indentation():
-    def do_test(data, expected):
-        result = pg._get_current_indentation(data)
-        assert expected == result
+    def do_test(data, expected_match, expected_rest):
+        match, rest = pg._get_current_indentation(data)
+        assert expected_match == match
+        assert expected_rest == rest
 
     items = [
-        (" foo", " "),
-        ("  foo", "  "),
-        ("\tfoo", "\t"),
-        ("\t\tfoo", "\t\t"),
-        (" \tfoo", " "),
-        ("\t foo", "\t")]
+        (" foo", " ", " foo"),
+        ("  foo", "  ", "  foo"),
+        ("\tfoo", "\t", "\tfoo"),
+        ("\t\tfoo", "\t\t", "\t\tfoo"),
+        (" \tfoo", " ", " \tfoo"),
+        ("\t foo", "\t", "\t foo")]
 
-    for data, expected in items:
-        yield do_test, data, expected
+    for data, match, rest in items:
+        yield do_test, data, match, rest
