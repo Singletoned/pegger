@@ -191,7 +191,7 @@ def match_join(text, pattern, name):
     result = filter_match(result)
     return (result, rest)
 
-def filter_match(match):
+def filter_match(match, recursive=False):
     "Concatenates consecutive characters"
     result = []
     result.append(match[0])
@@ -200,7 +200,9 @@ def filter_match(match):
         if isinstance(item, basestring):
             submatches.append(item)
         else:
-            if submatches:
+            if recursive:
+                submatches.append(filter_match(item, recursive=True)[1])
+            elif submatches:
                 result.append("".join(submatches))
                 submatches = []
                 result.append(item)
