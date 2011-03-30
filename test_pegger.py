@@ -837,7 +837,7 @@ def test_add_match_to_result():
         yield do_test, item
 
 def test_get_current_indentation_initial_indent():
-    indented_text =  pg.Indented(
+    indented_text = pg.Indented(
         pg.Words(),
         initial_indent=pg.AllOf("*   "))
 
