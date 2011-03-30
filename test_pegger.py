@@ -862,3 +862,17 @@ def test_get_current_indentation():
 
     for data, match, rest in items:
         yield do_test, data, match, rest
+
+def test_get_indented_lines():
+    data = [
+        "\tOne",
+        "\tTwo"
+        ]
+
+    expected = [
+        "One",
+        "Two"
+        ]
+
+    result = pg._get_indented_lines(data, "\t", list(data))
+    assert expected == result
