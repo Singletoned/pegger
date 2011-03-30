@@ -846,6 +846,16 @@ def test_get_current_indentation_initial_indent():
     result = pg._get_current_indentation(data, indented_text)
     assert expected == result
 
+def test_get_current_indentation_initial_indent_with_tabs():
+    indented_text = pg.Indented(
+        pg.Words(),
+        initial_indent=pg.AllOf(pg.Ignore("*"), "\t"))
+
+    data = "*\tfoo"
+    expected = ("\t", "\tfoo")
+    result = pg._get_current_indentation(data, indented_text)
+    assert expected == result
+
 def test_get_current_indentation():
     def do_test(data, expected_match, expected_rest):
         match, rest = pg._get_current_indentation(data)

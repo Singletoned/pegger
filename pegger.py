@@ -255,7 +255,11 @@ def _get_current_indentation(text, pattern=None):
             raise NoPatternFound
         match = filter_match(match, recursive=True)
         match = "".join(match[1:])
-        indent = " " * len(match)
+        if set(match) == set("\t"):
+            indent_type = "\t"
+        else:
+            indent_type = " "
+        indent = indent_type * len(match)
         rest = indent + rest
         return (indent, rest)
     else:
