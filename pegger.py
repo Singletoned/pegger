@@ -274,8 +274,8 @@ def match_indented(text, pattern, name):
     if (not indent) and (not pattern.optional):
         raise NoPatternFound
     lines = text.split("\n")
-    other_lines = list(lines)
-    indented_lines = _get_indented_lines(lines, indent, other_lines)
+    indented_lines = _get_indented_lines(lines, indent)
+    other_lines = lines[len(indented_lines):]
     indented_text = "\n".join(indented_lines)
     other_rest = "\n".join(other_lines)
     try:
@@ -289,14 +289,13 @@ def match_indented(text, pattern, name):
         result = result[0]
     return (result, rest)
 
-def _get_indented_lines(lines, indent, other_lines):
+def _get_indented_lines(lines, indent):
     indented_lines = []
     for line in lines:
         if line.startswith(indent):
-            unindented_line = other_lines.pop(0)[len(indent):]
-            indented_lines.append(unindented_line)
+            indented_lines.append(line[len(indent):])
         else:
-            return indented_lines
+            break
     return indented_lines
 
 def do_escape(tree):

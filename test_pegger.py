@@ -865,7 +865,7 @@ def test_get_current_indentation():
 
 def test_get_indented_lines():
     def do_test(indent, data, expected):
-        result = pg._get_indented_lines(data, indent, list(data))
+        result = pg._get_indented_lines(data, indent)
         assert expected == result
 
     items = [
