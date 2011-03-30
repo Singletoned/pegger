@@ -875,8 +875,11 @@ def test_get_indented_lines():
         [" ", [" One", " Two"], ["One", "Two"]],
         ["  ", ["   One", "   Two"], [" One", " Two"]],
         ["\t", ["\t\tOne", "\t\tTwo"], ["\tOne", "\tTwo"]],
+        ["  ", ["  One", "", "  Two"], ["One", "", "Two"]],
+        ["\t", ["\tOne", "", "\tTwo"], ["One", "", "Two"]],
+        ["  ", ["  One", "", "", "  Two"], ["One"]],
+        ["\t", ["\tOne", "", "", "\tTwo"], ["One"]],
         ]
 
     for indent, data, expected in items:
         yield do_test, indent, data, expected
-

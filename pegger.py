@@ -291,9 +291,16 @@ def match_indented(text, pattern, name):
 
 def _get_indented_lines(lines, indent):
     indented_lines = []
+    current_linebreak = []
     for line in lines:
         if line.startswith(indent):
+            if current_linebreak:
+                indented_lines.extend(current_linebreak)
+                current_linebreak = []
             indented_lines.append(line[len(indent):])
+        elif (not line) and (not current_linebreak):
+            # if the line is blank but the previous line wasn't
+            current_linebreak.append(line)
         else:
             break
     return indented_lines
