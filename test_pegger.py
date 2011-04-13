@@ -112,10 +112,12 @@ def test_match_ignore():
         match, rest = pg.match_ignore("123", ignore_a, "ignore_a")
 
 def test_match_one_of():
+    asterix = pg.Ignore("*")
+    
     emphasis = pg.AllOf(
-        pg.Ignore("*"),
+        asterix,
         lambda: pg.Many(pg.Not("*")),
-        pg.Ignore("*"))
+        asterix)
 
     phrase = pg.OneOf(
             pg.Words(),
@@ -139,9 +141,10 @@ def test_match_one_of():
     assert rest == ""
 
 def test_match_one_of_empty():
-    bullet = pg.OneOf(
-        pg.Ignore("*"),
-        pg.Ignore("-"))
+    b1 = pg.Ignore("*")
+    b2 = pg.Ignore("-")
+
+    bullet = pg.OneOf(b1, b2)
 
     data = "*"
     expected = ['bullet', ""]
@@ -199,8 +202,9 @@ def test_match_many_empty():
     "Test that empty matches don't raise NoPatternFound"
     def linebreaks():
         return pg.Many(
-            pg.Ignore(
-                "\n"))
+            pg.OneOf(
+                pg.Ignore(
+                    "\n")))
 
     data = "\n\n"
     expected = ['linebreaks', ""]
