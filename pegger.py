@@ -158,12 +158,14 @@ def match_one_of(text, pattern, name):
     for sub_pattern in pattern.options:
         try:
             match, rest = do_parse(text, sub_pattern)
+            result = [name]
+            if match:
+                _add_match_to_result(result, match)
+            else:
+                result.append("")
+            return (result, rest)
         except NoPatternFound:
             continue
-        if match:
-            result = [name]
-            _add_match_to_result(result, match)
-            return (result, rest)
     raise NoPatternFound
 
 def match_count_of(text, pattern, name):
@@ -215,21 +217,24 @@ def match_many(text, pattern, name):
     """Repeatedly match any of the given patterns"""
     result = [name]
     rest = text
+    match_made = False
     while rest:
         for sub_pattern in pattern.options:
             try:
                 match, rest = do_parse(rest, sub_pattern)
+                match_made = True
+                if match:
+                    _add_match_to_result(result, match)
+                break
             except NoPatternFound:
                 continue
-            if match:
-                match_made = True
-                _add_match_to_result(result, match)
-                break
         else:
             break
-    if result == [name]:
+    if not match_made:
         raise NoPatternFound
     else:
+        if result == [name]:
+            result.append("")
         return (result, rest)
 
 def match_not(text, pattern, name):

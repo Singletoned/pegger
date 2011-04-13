@@ -138,6 +138,17 @@ def test_match_one_of():
     assert match == ['', "text"]
     assert rest == ""
 
+def test_match_one_of_empty():
+    bullet = pg.OneOf(
+        pg.Ignore("*"),
+        pg.Ignore("-"))
+
+    data = "*"
+    expected = ['bullet', ""]
+    match, rest = pg.match_one_of(data, bullet, 'bullet')
+    assert match == expected
+    assert rest == ""
+
 def test_match_many_simple():
     def a():
         return "a"
@@ -181,6 +192,19 @@ def test_match_many_complex():
          ['emphasis', "bold words"],
          ['words', " in it"]]
     match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
+    assert match == expected
+    assert rest == ""
+
+def test_match_many_empty():
+    "Test that empty matches don't raise NoPatternFound"
+    def linebreaks():
+        return pg.Many(
+            pg.Ignore(
+                "\n"))
+
+    data = "\n\n"
+    expected = ['linebreaks', ""]
+    match, rest = pg.match_many(data, linebreaks(), 'linebreaks')
     assert match == expected
     assert rest == ""
 
