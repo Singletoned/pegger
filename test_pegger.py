@@ -411,7 +411,7 @@ def test_match_indented():
 
     match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
     assert match == expected
-    assert rest == "\n"
+    assert rest == ""
 
     def paragraph():
         return (
@@ -429,7 +429,7 @@ def test_match_indented():
     for data in [data_with_spaces, data_with_tabs]:
         match, rest = pg.match_indented(data, indented_text, 'indented_text')
         assert match == expected
-        assert rest == "\n"
+        assert rest == ""
 
     # Check indented with unnamed subpattern
 
@@ -446,7 +446,7 @@ def test_match_indented():
 
     match, rest = pg.match_indented(data, indented_text, 'indented_text')
     assert match == expected
-    assert rest == "\n"
+    assert rest == ""
 
     # Check indented with unnamed pattern and unnamed subpattern
 
@@ -454,7 +454,7 @@ def test_match_indented():
 
     match, rest = pg.match_indented(data, indented_text, None)
     assert match == expected
-    assert rest == "\n"
+    assert rest == ""
 
 def test_match_indented_nested_bullets():
     def bullet():
@@ -487,7 +487,7 @@ def test_match_indented_nested_bullets():
 
     match, rest = pg.match_indented(data, indented_bullets(), 'indented_bullets')
     assert match == expected
-    assert rest == "\n\n\n"
+    assert rest == "\n"
 
 def test_indented_bullet():
     def paragraph():
