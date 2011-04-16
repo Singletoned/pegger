@@ -355,6 +355,9 @@ def test_match_not():
     assert match == ['not_a', "b"]
     assert rest == "cd"
 
+    with py.test.raises(pg.NoPatternFound):
+        match, rest = pg.match_not("", not_a, 'not_a')
+
 def test_match_optional():
     optional_a = pg.Optional("a")
 

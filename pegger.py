@@ -244,7 +244,7 @@ def match_many(text, pattern, name):
 
 def match_not(text, pattern, name):
     """Match a character if text doesn't start with pattern"""
-    if text.startswith(pattern.pattern):
+    if (not text) or text.startswith(pattern.pattern):
         raise NoPatternFound
     else:
         return ([name, text[0]], text[1:])
