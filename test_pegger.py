@@ -93,6 +93,14 @@ def test_match_all_of():
     with py.test.raises(pg.NoPatternFound):
         result = pg.match_all_of("cab", word_ab, "word_ab")
 
+    ignore_ab = pg.AllOf(
+        pg.Ignore("a"),
+        pg.Ignore("b"))
+
+    match, rest = pg.match_all_of("ab", ignore_ab, "ignore_ab")
+    assert match == ['ignore_ab', ""]
+    assert rest == ""
+
 def test_match_ignore():
     ignore_a = pg.Ignore("a")
 

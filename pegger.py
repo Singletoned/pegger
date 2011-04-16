@@ -146,6 +146,8 @@ def match_all_of(text, pattern, name):
         match, rest = do_parse(rest, sub_pattern)
         if match:
             _add_match_to_result(result, match)
+    if result == [name]:
+        result.append("")
     return (result, rest)
 
 def match_ignore(text, pattern, name):
