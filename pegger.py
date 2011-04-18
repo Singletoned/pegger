@@ -293,15 +293,11 @@ def match_indented(text, pattern, name):
     indented_lines = _get_indented_lines(lines, indent)
     other_lines = lines[len(indented_lines):]
     indented_text = "\n".join(indented_lines)
-    other_rest = "\n".join(other_lines)
     try:
         indented_match, indented_rest = do_parse(indented_text, pattern.pattern)
     except NoPatternFound:
         raise NoPatternFound
-    if indented_rest and other_rest:
-        rest = indented_rest + "\n" + other_rest
-    else:
-        rest = indented_rest + other_rest
+    rest = "\n".join(indented_rest.split("\n") + other_lines)
     result = [name]
     _add_match_to_result(result, indented_match)
     if len(result) == 1:

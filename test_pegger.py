@@ -482,6 +482,21 @@ class TestMatchIndented(unittest.TestCase):
         assert match == expected
         assert rest == ""
 
+    def test_retaining_linebreaks(self):
+        paragraph = (
+            pg.Words())
+
+        indented_text = pg.Indented(paragraph)
+
+        data = "  Some text\n"
+
+        expected = ['indented_text', "Some text"]
+
+        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        assert match == expected
+        assert rest == "\n"
+
+
 def test_match_indented_nested_bullets():
     def bullet():
         return pg.AllOf(
