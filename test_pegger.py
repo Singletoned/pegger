@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import unittest
+
 import py
 
 import pegger as pg
@@ -388,89 +390,97 @@ def test_match_optional():
     assert match == []
     assert rest == "bc"
 
-def test_match_indented():
-    # Test without optional
+class TestMatchIndented(unittest.TestCase):
+    """Unittests for match_indented"""
+    
+    def test_without_optional(self):
+        """Test that without optional, no match is made"""
+        def list_item():
+            return (
+                pg.Ignore("\n* "),
+                pg.Words())
 
-    def list_item():
-        return (
-            pg.Ignore("\n* "),
-            pg.Words())
+        indented_bullets = pg.Indented(
+            pg.Many(list_item))
 
-    indented_bullets = pg.Indented(
-        pg.Many(list_item))
+        data = """
+    * A bullet"""
 
-    data = """
-* A bullet"""
+        expected = [
+            'list_item', "A bullet"]
 
-    expected = [
-        'list_item', "A bullet"]
+        with py.test.raises(pg.NoPatternFound):
+            match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
 
-    with py.test.raises(pg.NoPatternFound):
+    def test_with_optional(self):
+        """Test that optional allows you to match without an indent"""
+        def list_item():
+            return pg.AllOf(
+                pg.Ignore("* "),
+                pg.Words())
+
+        indented_bullets = pg.Indented(
+            pg.Many(list_item),
+            optional=True)
+
+        data = """* A bullet"""
+
+        expected = [
+            'indented_bullets',
+            ['list_item', "A bullet"]]
+
         match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+        assert match == expected
+        assert rest == ""
 
-    # Test with optional
+    def test_indented_with_named_subpattern(self):
+        def paragraph():
+            return (
+                pg.Words())
 
-    def list_item():
-        return pg.AllOf(
-            pg.Ignore("* "),
+        indented_text = pg.Indented(paragraph)
+
+        data_with_spaces = """  Some text"""
+        data_with_tabs = """\tSome text"""
+
+        expected = [
+            'indented_text',
+            ['paragraph', "Some text"]]
+
+        for data in [data_with_spaces, data_with_tabs]:
+            match, rest = pg.match_indented(data, indented_text, 'indented_text')
+            assert match == expected
+            assert rest == ""
+
+    def test_indented_with_anonymous_subpattern(self):
+        paragraph = (
             pg.Words())
 
-    indented_bullets = pg.Indented(
-        pg.Many(list_item),
-        optional=True)
+        indented_text = pg.Indented(paragraph)
 
-    data = """* A bullet"""
+        data = "  Some text"
 
-    expected = [
-        'indented_bullets',
-        ['list_item', "A bullet"]]
+        expected = [
+            'indented_text',
+            "Some text"]
 
-    match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
-    assert match == expected
-    assert rest == ""
-
-    def paragraph():
-        return (
-            pg.Words())
-
-    indented_text = pg.Indented(paragraph)
-
-    data_with_spaces = """  Some text"""
-    data_with_tabs = """\tSome text"""
-
-    expected = [
-        'indented_text',
-        ['paragraph', "Some text"]]
-
-    for data in [data_with_spaces, data_with_tabs]:
         match, rest = pg.match_indented(data, indented_text, 'indented_text')
         assert match == expected
         assert rest == ""
 
-    # Check indented with unnamed subpattern
+    def test_indented_with_anonymous_pattern_and_subpattern(self):
+        paragraph = (
+            pg.Words())
 
-    data = "  Some text"
+        indented_text = pg.Indented(paragraph)
 
-    paragraph = (
-        pg.Words())
+        data = "  Some text"
 
-    indented_text = pg.Indented(paragraph)
+        expected = [None, "Some text"]
 
-    expected = [
-        'indented_text',
-        "Some text"]
-
-    match, rest = pg.match_indented(data, indented_text, 'indented_text')
-    assert match == expected
-    assert rest == ""
-
-    # Check indented with unnamed pattern and unnamed subpattern
-
-    expected = [None, "Some text"]
-
-    match, rest = pg.match_indented(data, indented_text, None)
-    assert match == expected
-    assert rest == ""
+        match, rest = pg.match_indented(data, indented_text, None)
+        assert match == expected
+        assert rest == ""
 
 def test_match_indented_nested_bullets():
     def bullet():
