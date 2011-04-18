@@ -201,6 +201,8 @@ def match_join(text, pattern, name):
 
 def filter_match(match, recursive=False):
     "Concatenates consecutive characters"
+    if match == []:
+        return match
     result = []
     result.append(match[0])
     submatches = []

@@ -285,6 +285,11 @@ def test_filter_match():
     result = pg.filter_match(data, recursive=True)
     assert result == expected
 
+    data = []
+    expected = []
+    result = pg.filter_match(data, recursive=True)
+    assert result == expected
+
 def test_match_count_of():
     three_dashes = pg.CountOf(3, "-")
 
