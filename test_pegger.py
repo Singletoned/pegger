@@ -496,6 +496,21 @@ class TestMatchIndented(unittest.TestCase):
         assert match == expected
         assert rest == "\n"
 
+    def test_reindenting_indented_rest(self):
+        paragraph = (
+            pg.Words())
+
+        indented_text = pg.Indented(paragraph)
+
+        data = "  Some text\n  Unmatched text\n  More unmatched text"
+
+        expected = ['indented_text', "Some text"]
+        expected_rest = "\n  Unmatched text\n  More unmatched text"
+
+        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        assert match == expected
+        assert rest == expected_rest
+
 
 def test_match_indented_nested_bullets():
     def bullet():

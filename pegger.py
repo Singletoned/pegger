@@ -297,7 +297,10 @@ def match_indented(text, pattern, name):
         indented_match, indented_rest = do_parse(indented_text, pattern.pattern)
     except NoPatternFound:
         raise NoPatternFound
-    rest = "\n".join(indented_rest.split("\n") + other_lines)
+    indented_rest = indented_rest.replace("\n", "\n"+indent)
+    rest_lines = [line for line in indented_rest.split("\n")]
+    rest_lines = rest_lines + other_lines
+    rest = "\n".join(rest_lines)
     result = [name]
     _add_match_to_result(result, indented_match)
     if len(result) == 1:
