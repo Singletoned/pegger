@@ -511,6 +511,32 @@ class TestMatchIndented(unittest.TestCase):
         assert match == expected
         assert rest == expected_rest
 
+    def test_with_indent_chars(self):
+        "Test that Indented can match with indents other than whitespace"
+        lines = pg.Many(
+            pg.OneOf(
+                pg.Words(),
+                "\n"))
+        indented_text = pg.Indented(
+            lines,
+            indent_pattern="> ")
+
+        data = """
+> Some text
+> indented with
+> non whitespace
+""".strip()
+
+        expected = ['indented_text',
+                    "Some text",
+                    "\n",
+                    "indented with",
+                    "\n",
+                    "non whitespace"]
+
+        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        assert match == expected
+        assert rest == ""
 
 def test_match_indented_nested_bullets():
     def bullet():

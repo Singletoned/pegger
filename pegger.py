@@ -90,10 +90,11 @@ class Optional(PatternMatcher):
 
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
-    def __init__(self, pattern, optional=False, initial_indent=None):
+    def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
         self.pattern = pattern
         self.optional = optional
         self.initial_indent = initial_indent
+        self.indent_pattern = indent_pattern
 
 
 class Escaped(PatternMatcher):
@@ -274,6 +275,10 @@ def _get_current_indentation(text, pattern=None):
         indent = indent_type * len(match)
         rest = indent + rest
         return (indent, rest)
+    elif pattern and pattern.indent_pattern:
+        indent, rest = do_parse(text, pattern.indent_pattern)
+        indent = indent[1]
+        return (indent, text)
     else:
         indent = ""
         for char in text:
