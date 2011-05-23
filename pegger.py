@@ -63,6 +63,10 @@ class Join(PatternMatcher):
     "A matcher that joins together any consecutive strings"
 
 
+class Lookahead(PatternMatcher):
+    """A matcher that looks ahead for a pattern and removes it from there"""
+
+
 class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
 
@@ -352,6 +356,20 @@ def match_escaped(text, pattern, name):
     escaped_match = do_escape(match)
     _add_match_to_result(result, escaped_match)
     return (result, rest)
+
+def match_lookahead(text, pattern, name):
+    """Match the pattern somewhere ahead and remove it from there"""
+    unmatched = ""
+    while text:
+        try:
+            match, rest = do_parse(text, pattern.pattern)
+            result = [name]
+            _add_match_to_result(result, match)
+            return (result, unmatched+rest)
+        except NoPatternFound:
+            unmatched = unmatched + text[0]
+            text = text[1:]
+    raise NoPatternFound
 
 def _add_match_to_result(result, match):
     "If the match has no name, extend the result"

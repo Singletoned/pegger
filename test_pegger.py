@@ -614,6 +614,23 @@ def test_match_escaped():
     assert match == expected
     assert rest == ""
 
+def test_match_lookahead():
+    foo_pattern = pg.Lookahead("foo")
+
+    data = """
+bar
+baz
+foo
+""".strip()
+
+    expected = [
+        'foo_pattern',
+        "foo"]
+
+    match, rest = pg.match_lookahead(data, foo_pattern, 'foo_pattern')
+    assert match == expected
+    assert rest == "bar\nbaz\n"
+
 def test_parse_string_a():
     def letter_a():
         return "a"
