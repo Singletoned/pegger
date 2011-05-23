@@ -123,7 +123,7 @@ def test_match_ignore():
 
 def test_match_one_of():
     asterix = pg.Ignore("*")
-    
+
     emphasis = pg.AllOf(
         asterix,
         lambda: pg.Many(pg.Not("*")),
@@ -392,7 +392,7 @@ def test_match_optional():
 
 class TestMatchIndented(unittest.TestCase):
     """Unittests for match_indented"""
-    
+
     def test_without_optional(self):
         """Test that without optional, no match is made"""
         def list_item():
