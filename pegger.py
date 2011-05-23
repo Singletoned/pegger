@@ -46,6 +46,7 @@ class Insert(Matcher):
     def __init__(self, text):
         self.text = text
 
+
 class Some(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
 
@@ -57,8 +58,10 @@ class Ignore(PatternMatcher):
 class Not(PatternMatcher):
     """A matcher that matches any string that isn't the pattern"""
 
+
 class Join(PatternMatcher):
     "A matcher that joins together any consecutive strings"
+
 
 class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
