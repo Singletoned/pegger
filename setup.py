@@ -8,7 +8,7 @@ setup(
     author="Ed Singleton",
     author_email="singletoned@gmail.com",
     description="Some kind of simplistic PEG style parser",
-    py_modules=['pegger'],
+    packages=['pegger'],
     include_package_data=True,
     zip_safe=False,
 )
