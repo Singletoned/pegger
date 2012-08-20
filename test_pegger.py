@@ -964,7 +964,7 @@ def test_add_match_to_result():
     def do_test(data):
         expected = ['useful_name', "flimmle", ['sub_item', "flammle"], "flapple"]
         result = ["useful_name"]
-        pg._add_match_to_result(result, data)
+        pg.pegger._add_match_to_result(result, data)
         assert expected == result
 
     items = [
@@ -982,7 +982,7 @@ def test_get_current_indentation_initial_indent():
 
     data = "*   foo"
     expected = ("    ", "    foo")
-    result = pg._get_current_indentation(data, indented_text)
+    result = pg.pegger._get_current_indentation(data, indented_text)
     assert expected == result
 
 def test_get_current_indentation_initial_indent_with_tabs():
@@ -992,12 +992,12 @@ def test_get_current_indentation_initial_indent_with_tabs():
 
     data = "*\tfoo"
     expected = ("\t", "\tfoo")
-    result = pg._get_current_indentation(data, indented_text)
+    result = pg.pegger._get_current_indentation(data, indented_text)
     assert expected == result
 
 def test_get_current_indentation():
     def do_test(data, expected_match, expected_rest):
-        match, rest = pg._get_current_indentation(data)
+        match, rest = pg.pegger._get_current_indentation(data)
         assert expected_match == match
         assert expected_rest == rest
 
@@ -1014,7 +1014,7 @@ def test_get_current_indentation():
 
 def test_get_indented_lines():
     def do_test(indent, data, expected):
-        result = pg._get_indented_lines(data, indent)
+        result = pg.pegger._get_indented_lines(data, indent)
         assert expected == result
 
     items = [
