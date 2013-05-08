@@ -10,7 +10,11 @@ class NoPatternFound(Exception):
     pass
 
 class UnknownMatcherType(Exception):
-    pass
+    def __init__(self, pattern_type):
+        self.pattern_type = pattern_type
+
+    def __str__(self):
+        return "%s was not found" % self.pattern_type
 
 class Matcher(object):
     """A base matcher"""
@@ -45,6 +49,11 @@ class Insert(Matcher):
     """A matcher that inserts some text into the result"""
     def __init__(self, text):
         self.text = text
+
+
+class EOF(Matcher):
+    """A matcher that matches the end of the string"""
+    pass
 
 
 class Some(PatternMatcher):
@@ -196,6 +205,12 @@ def match_count_of(text, pattern, name):
 
 def match_insert(text, pattern, name):
     return ([name, pattern.text], text)
+
+def match_eof(text, pattern, name):
+    if not text:
+        return ([name, ''], text)
+    else:
+        raise NoPatternFound("No EOF found")
 
 def match_join(text, pattern, name):
     try:
@@ -398,6 +413,7 @@ matchers = {
     Insert: match_insert,
     CountOf: match_count_of,
     Join: match_join,
+    EOF: match_eof,
     }
 
 def do_parse(text, pattern):

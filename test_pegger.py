@@ -402,6 +402,18 @@ def test_match_optional():
     assert match == []
     assert rest == "bc"
 
+def test_match_eof():
+    eof = pg.EOF()
+    match, rest = pg.match_eof("", eof, 'eof')
+    assert match == ['eof', '']
+
+    text_then_eof = pg.AllOf(
+        "a",
+        pg.EOF())
+    match, rest = pg.match_all_of("a", text_then_eof, 'text_then_eof')
+    assert match == ['text_then_eof', 'a', '']
+
+
 class TestMatchIndented(unittest.TestCase):
     """Unittests for match_indented"""
 
