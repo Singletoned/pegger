@@ -56,10 +56,6 @@ class EOF(Matcher):
     pass
 
 
-class Join(PatternMatcher):
-    "A matcher that joins together any consecutive strings"
-
-
 class Lookahead(PatternMatcher):
     """A matcher that looks ahead for a pattern and removes it from there"""
 
@@ -221,15 +217,16 @@ def match_eof(text, pattern, name):
     else:
         raise NoPatternFound("No EOF found")
 
-def match_join(text, pattern, name):
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        raise NoPatternFound
-    result = [name]
-    _add_match_to_result(result, match)
-    result = filter_match(result)
-    return (result, rest)
+class Join(PatternCreator):
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+        except NoPatternFound:
+            raise NoPatternFound
+        result = [name]
+        _add_match_to_result(result, match)
+        result = filter_match(result)
+        return (result, rest)
 
 def filter_match(match, recursive=False):
     "Concatenates consecutive characters"
@@ -422,7 +419,7 @@ matchers = {
     Escaped: match_escaped,
     Insert: match_insert,
     CountOf: match_count_of,
-    Join: match_join,
+    Join: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     EOF: match_eof,
     }
 

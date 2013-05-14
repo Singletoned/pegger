@@ -266,7 +266,7 @@ def test_match_join():
 
     data = "aaa"
     expected = ['three_times_a', "aaa"]
-    match, rest = pg.match_join(data, three_times_a, 'three_times_a')
+    match, rest = three_times_a(data, 'three_times_a')
     assert match == expected
     assert rest == ""
 
@@ -276,7 +276,7 @@ def test_match_join():
 
     data = "abcd"
     expected = ['not_d', "abc"]
-    match, rest = pg.match_join(data, not_d, 'not_d')
+    match, rest = not_d(data, 'not_d')
     assert match == expected
     assert rest == "d"
 
