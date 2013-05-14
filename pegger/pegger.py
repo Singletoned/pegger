@@ -117,6 +117,13 @@ class Escaped(PatternMatcher):
     """A matcher that html-escapes the text it matches"""
 
 
+class NamedPattern(object):
+    """A pattern with a name"""
+    def __init__(self, name, pattern):
+        self.name = name
+        self.pattern = pattern
+
+
 def match_some(text, pattern, name):
     """Match the given char repeatedly"""
     match = []
@@ -432,7 +439,10 @@ def parse_string(text, pattern):
 
 def get_pattern_info(pattern):
     pattern_name = ""
-    if callable(pattern):
+    if isinstance(pattern, NamedPattern):
+        pattern_name = pattern.name
+        pattern = pattern.pattern
+    elif callable(pattern):
         pattern_name = pattern.__name__
         pattern = pattern()
         if pattern_name == "<lambda>":

@@ -61,11 +61,13 @@ def test_match_words():
 
 
 def test_match_all_of():
-    def letter_a():
-        return "a"
+    letter_a = pg.NamedPattern(
+        'letter_a',
+        "a")
 
-    def letter_b():
-        return "b"
+    letter_b = pg.NamedPattern(
+        'letter_b',
+        "b")
 
     word_ab = pg.AllOf(letter_a, letter_b)
 
@@ -85,9 +87,9 @@ def test_match_all_of():
     assert rest == "!"
 
     emphasis = pg.AllOf(
-        lambda: pg.Ignore("*"),
-        lambda: pg.Words(),
-        lambda: pg.Ignore("*"))
+        pg.Ignore("*"),
+        pg.Words(),
+        pg.Ignore("*"))
 
     match, rest = pg.match_all_of("*abc*", emphasis, "emphasis")
     assert match == ['emphasis', "abc"]
@@ -126,7 +128,7 @@ def test_match_one_of():
 
     emphasis = pg.AllOf(
         asterix,
-        lambda: pg.Many(pg.Not("*")),
+        pg.Many(pg.Not("*")),
         asterix)
 
     phrase = pg.OneOf(
@@ -163,11 +165,13 @@ def test_match_one_of_empty():
     assert rest == ""
 
 def test_match_many_simple():
-    def a():
-        return "a"
+    a = pg.NamedPattern(
+        'a',
+        "a")
 
-    def b():
-        return "b"
+    b = pg.NamedPattern(
+        'b',
+        "b")
 
     letters = pg.Many(a, b)
 
@@ -188,14 +192,16 @@ def test_match_many_simple():
         match, rest = pg.match_many("cab", letters, "letters")
 
 def test_match_many_complex():
-    def emphasis():
-        return pg.AllOf(
-            lambda: pg.Ignore("*"),
-            lambda: pg.Words(),
-            lambda: pg.Ignore("*"))
+    emphasis = pg.NamedPattern(
+        'emphasis',
+        pg.AllOf(
+            pg.Ignore("*"),
+            pg.Words(),
+            pg.Ignore("*")))
 
-    def words():
-        return pg.Words()
+    words = pg.NamedPattern(
+        'words',
+        pg.Words())
 
     body = pg.Many(emphasis, words)
 
@@ -223,27 +229,30 @@ def test_match_many_empty():
     assert rest == ""
 
 def test_match_many_specificty():
-    def lettter_a():
-        return "a"
+    letter_a = pg.NamedPattern(
+        'letter_a',
+        "a")
 
-    def lettter_b():
-        return "b"
+    letter_b = pg.NamedPattern(
+        'letter_b',
+        "b")
 
-    def other_letters():
-        return pg.Words()
+    other_letters = pg.NamedPattern(
+        'other_letters',
+        pg.Words())
 
     match_letters = pg.Many(
-        lettter_a,
-        lettter_b,
+        letter_a,
+        letter_b,
         other_letters)
 
     data = "abac"
 
     expected = [
         'match_letters',
-        ['lettter_a', "a"],
-        ['lettter_b', "b"],
-        ['lettter_a', "a"],
+        ['letter_a', "a"],
+        ['letter_b', "b"],
+        ['letter_a', "a"],
         ['other_letters', "c"]]
 
     match, rest = pg.match_many(data, match_letters, 'match_letters')
@@ -388,8 +397,9 @@ def test_match_optional():
     assert match == []
     assert rest == "bc"
 
-    def letter_a():
-        return "a"
+    letter_a = pg.NamedPattern(
+        'letter_a',
+        "a")
 
     optional_a = pg.Optional(letter_a)
     match, rest = pg.match_optional("abc", optional_a, 'optional_a')
@@ -438,10 +448,11 @@ class TestMatchIndented(unittest.TestCase):
 
     def test_with_optional(self):
         """Test that optional allows you to match without an indent"""
-        def list_item():
-            return pg.AllOf(
+        list_item = pg.NamedPattern(
+            'list_item',
+            pg.AllOf(
                 pg.Ignore("* "),
-                pg.Words())
+                pg.Words()))
 
         indented_bullets = pg.Indented(
             pg.Many(list_item),
@@ -458,9 +469,9 @@ class TestMatchIndented(unittest.TestCase):
         assert rest == ""
 
     def test_indented_with_named_subpattern(self):
-        def paragraph():
-            return (
-                pg.Words())
+        paragraph = pg.NamedPattern(
+            'paragraph',
+            pg.Words())
 
         indented_text = pg.Indented(paragraph)
 
@@ -563,21 +574,21 @@ class TestMatchIndented(unittest.TestCase):
         assert rest == ""
 
 def test_match_indented_nested_bullets():
-    def bullet():
-        return pg.AllOf(
+    bullet = pg.NamedPattern(
+        'bullet',
+        pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
             pg.Ignore("* "),
-            pg.Words())
+            pg.Words()))
 
     def indented_bullets():
         return pg.Indented(
             pg.AllOf(
                 bullet,
                 pg.Optional(
-                    indented_bullets,
-                    )),
+                    indented_bullets)),
             optional=True)
 
     data = """
