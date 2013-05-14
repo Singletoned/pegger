@@ -91,13 +91,18 @@ class NamedPattern(object):
         self.pattern = pattern
 
 
-class PatternCreator(object):
+class BasePatternCreator(object):
+    def __call__(self, text, name=""):
+        return self.match(text, name)
+
+    def __repr__(self):
+        return "<%s>" % (self.__class__.__name__)
+
+
+class PatternCreator(BasePatternCreator):
     """A pattern creator"""
     def __init__(self, pattern):
         self.pattern = pattern
-
-    def __call__(self, text, name=""):
-        return self.match(text, name)
 
     def __repr__(self):
         return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
@@ -422,7 +427,7 @@ matchers = {
 
 def do_parse(text, pattern):
     """Dispatch to the correct function based on the type of the pattern"""
-    if isinstance(pattern, PatternCreator):
+    if isinstance(pattern, BasePatternCreator):
         return pattern(text)
     else:
         pattern, pattern_name, pattern_type = get_pattern_info(pattern)
