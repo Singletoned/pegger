@@ -328,7 +328,7 @@ def test_match_insert():
 
     expected = ['insert_a', "a"]
 
-    match, rest = pg.match_insert("", insert_a, 'insert_a')
+    match, rest = insert_a("", 'insert_a')
     assert match == expected
     assert rest == ""
 
