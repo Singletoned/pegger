@@ -167,6 +167,15 @@ def match_text(text, pattern, name):
     else:
         raise NoPatternFound
 
+class Ignore(PatternCreator):
+    "Match the pattern, but return no result"
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+            return ([], rest)
+        except NoPatternFound:
+            raise NoPatternFound
+
 def match_all_of(text, pattern, name):
     "Match each of the patterns in pattern"
     result = [name]
@@ -178,15 +187,6 @@ def match_all_of(text, pattern, name):
     if result == [name]:
         result.append("")
     return (result, rest)
-
-class Ignore(PatternCreator):
-    "Match the pattern, but return no result"
-    def match(self, text, name):
-        try:
-            match, rest = do_parse(text, self.pattern)
-            return ([], rest)
-        except NoPatternFound:
-            raise NoPatternFound
 
 def match_one_of(text, pattern, name):
     """Match one of the patterns given"""
