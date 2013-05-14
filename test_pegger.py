@@ -414,7 +414,7 @@ def test_match_optional():
 
 def test_match_eof():
     eof = pg.EOF()
-    match, rest = pg.match_eof("", eof, 'eof')
+    match, rest = eof("", 'eof')
     assert match == ['eof', '']
 
     text_then_eof = pg.AllOf(

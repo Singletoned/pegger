@@ -38,11 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class EOF(Matcher):
-    """A matcher that matches the end of the string"""
-    pass
-
-
 class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
 
@@ -212,11 +207,15 @@ class Insert(PatternCreator):
     def match(self, text, name):
         return ([name, self.text], text)
 
-def match_eof(text, pattern, name):
-    if not text:
-        return ([name, ''], text)
-    else:
-        raise NoPatternFound("No EOF found")
+
+class EOF(BasePatternCreator):
+    """A matcher that matches the end of the string"""
+    def match(self, text, name):
+        if not text:
+            return ([name, ''], text)
+        else:
+            raise NoPatternFound("No EOF found")
+
 
 class Join(PatternCreator):
     def match(self, text, name):
@@ -422,7 +421,7 @@ matchers = {
     Insert: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     CountOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Join: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    EOF: match_eof,
+    EOF: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     }
 
 def do_parse(text, pattern):
