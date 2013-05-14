@@ -38,13 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class CountOf(Matcher):
-    """A matcher that matches count items"""
-    def __init__(self, count, pattern):
-        self.count = count
-        self.pattern = pattern
-
-
 class Insert(Matcher):
     """A matcher that inserts some text into the result"""
     def __init__(self, text):
@@ -191,18 +184,25 @@ def match_one_of(text, pattern, name):
             continue
     raise NoPatternFound
 
-def match_count_of(text, pattern, name):
-    result = [name]
-    rest = text
-    for i in range(pattern.count):
-        try:
-            match, rest = do_parse(rest, pattern.pattern)
-        except NoPatternFound:
-            raise NoPatternFound("Only %s of the given pattern were found" % i)
-        else:
-            if match:
-                _add_match_to_result(result, match)
-    return (result, rest)
+
+class CountOf(PatternCreator):
+    """A matcher that matches count items"""
+    def __init__(self, count, pattern):
+        self.count = count
+        self.pattern = pattern
+
+    def match(self, text, name):
+        result = [name]
+        rest = text
+        for i in range(self.count):
+            try:
+                match, rest = do_parse(rest, self.pattern)
+            except NoPatternFound:
+                raise NoPatternFound("Only %s of the given pattern were found" % i)
+            else:
+                if match:
+                    _add_match_to_result(result, match)
+        return (result, rest)
 
 def match_insert(text, pattern, name):
     return ([name, pattern.text], text)
@@ -415,7 +415,7 @@ matchers = {
     Indented: match_indented,
     Escaped: match_escaped,
     Insert: match_insert,
-    CountOf: match_count_of,
+    CountOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Join: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     EOF: match_eof,
     }

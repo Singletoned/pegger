@@ -305,13 +305,13 @@ def test_match_count_of():
     three_dashes = pg.CountOf(3, "-")
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_count_of("--", three_dashes, 'three_dashes')
+        match, rest = three_dashes("--", 'three_dashes')
 
     expected = [
         'three_dashes',
         "-", "-", "-"]
 
-    match, rest = pg.match_count_of("---", three_dashes, 'three_dashes')
+    match, rest = three_dashes("---", 'three_dashes')
     assert match == expected
     assert rest == ""
 
@@ -319,7 +319,7 @@ def test_match_count_of():
         'three_dashes',
         "-", "-", "-"]
 
-    match, rest = pg.match_count_of("----", three_dashes, 'three_dashes')
+    match, rest = three_dashes("----", 'three_dashes')
     assert match == expected
     assert rest == "-"
 
