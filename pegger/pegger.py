@@ -56,10 +56,6 @@ class EOF(Matcher):
     pass
 
 
-class Lookahead(PatternMatcher):
-    """A matcher that looks ahead for a pattern and removes it from there"""
-
-
 class OneOf(OptionsMatcher):
     """A matcher that matches the first matching matcher"""
 
@@ -383,19 +379,20 @@ def match_escaped(text, pattern, name):
     _add_match_to_result(result, escaped_match)
     return (result, rest)
 
-def match_lookahead(text, pattern, name):
+class Lookahead(PatternCreator):
     """Match the pattern somewhere ahead and remove it from there"""
-    unmatched = ""
-    while text:
-        try:
-            match, rest = do_parse(text, pattern.pattern)
-            result = [name]
-            _add_match_to_result(result, match)
-            return (result, unmatched+rest)
-        except NoPatternFound:
-            unmatched = unmatched + text[0]
-            text = text[1:]
-    raise NoPatternFound
+    def match(self, text, name):
+        unmatched = ""
+        while text:
+            try:
+                match, rest = do_parse(text, self.pattern)
+                result = [name]
+                _add_match_to_result(result, match)
+                return (result, unmatched+rest)
+            except NoPatternFound:
+                unmatched = unmatched + text[0]
+                text = text[1:]
+        raise NoPatternFound
 
 def _add_match_to_result(result, match):
     "If the match has no name, extend the result"

@@ -662,7 +662,7 @@ foo
         'foo_pattern',
         "foo"]
 
-    match, rest = pg.match_lookahead(data, foo_pattern, 'foo_pattern')
+    match, rest = foo_pattern(data, 'foo_pattern')
     assert match == expected
     assert rest == "bar\nbaz\n"
 
