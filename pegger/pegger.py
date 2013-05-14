@@ -62,10 +62,6 @@ class Words(object):
         return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
 
 
-class Optional(PatternMatcher):
-    """A matcher that matches the pattern if it's available"""
-
-
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
     def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
@@ -285,12 +281,15 @@ class Not(PatternCreator):
         else:
             raise NoPatternFound
 
-def match_optional(text, pattern, name):
-    """Match pattern if it's there"""
-    try:
-        return do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        return ([], text)
+
+class Optional(PatternCreator):
+    """A matcher that matches the pattern if it's available"""
+    def match(self, text, name):
+        """Match pattern if it's there"""
+        try:
+            return do_parse(text, self.pattern)
+        except NoPatternFound:
+            return ([], text)
 
 def _get_current_indentation(text, pattern=None):
     "Finds the current number of spaces at the start"
@@ -415,7 +414,7 @@ matchers = {
     OneOf: match_one_of,
     Many: match_many,
     Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    Optional: match_optional,
+    Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Indented: match_indented,
     Escaped: match_escaped,
     Insert: lambda text, pattern, pattern_name: pattern(text, pattern_name),

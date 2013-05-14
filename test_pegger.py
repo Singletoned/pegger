@@ -389,11 +389,11 @@ def test_match_not():
 def test_match_optional():
     optional_a = pg.Optional("a")
 
-    match, rest = pg.match_optional("abc", optional_a, 'optional_a')
+    match, rest = optional_a("abc", 'optional_a')
     assert match == ['', "a"]
     assert rest == "bc"
 
-    match, rest = pg.match_optional("bc", optional_a, 'optional_a')
+    match, rest = optional_a("bc", 'optional_a')
     assert match == []
     assert rest == "bc"
 
@@ -402,13 +402,13 @@ def test_match_optional():
         "a")
 
     optional_a = pg.Optional(letter_a)
-    match, rest = pg.match_optional("abc", optional_a, 'optional_a')
+    match, rest = optional_a("abc", 'optional_a')
     assert match == ['letter_a', "a"]
     assert rest == "bc"
 
     optional_ignore = pg.Optional(pg.Ignore("a"))
 
-    match, rest = pg.match_optional("abc", optional_ignore, 'optional_ignore')
+    match, rest = optional_ignore("abc", 'optional_ignore')
     assert match == []
     assert rest == "bc"
 
