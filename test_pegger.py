@@ -108,7 +108,7 @@ def test_match_all_of():
 def test_match_ignore():
     ignore_a = pg.Ignore("a")
 
-    match, rest = pg.match_ignore("a", ignore_a, "ignore_a")
+    match, rest = ignore_a("a", "ignore_a")
     assert match == []
     assert rest == ""
 
@@ -116,12 +116,12 @@ def test_match_ignore():
         pg.AllOf(pg.Optional("#"),
          "abc"))
 
-    match, rest = pg.match_ignore("#abc", ignore_a, "ignore_a")
+    match, rest = ignore_a("#abc", "ignore_a")
     assert match == []
     assert rest == ""
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_ignore("123", ignore_a, "ignore_a")
+        match, rest = ignore_a("123", "ignore_a")
 
 def test_match_one_of():
     asterix = pg.Ignore("*")

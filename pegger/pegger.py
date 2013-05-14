@@ -56,10 +56,6 @@ class EOF(Matcher):
     pass
 
 
-class Ignore(PatternMatcher):
-    """A matcher that matches any one char repeatedly"""
-
-
 class Not(PatternMatcher):
     """A matcher that matches any string that isn't the pattern"""
 
@@ -183,13 +179,14 @@ def match_all_of(text, pattern, name):
         result.append("")
     return (result, rest)
 
-def match_ignore(text, pattern, name):
+class Ignore(PatternCreator):
     "Match the pattern, but return no result"
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-        return ([], rest)
-    except NoPatternFound:
-        raise NoPatternFound
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+            return ([], rest)
+        except NoPatternFound:
+            raise NoPatternFound
 
 def match_one_of(text, pattern, name):
     """Match one of the patterns given"""
@@ -419,7 +416,7 @@ matchers = {
     AllOf: match_all_of,
     Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: match_words,
-    Ignore: match_ignore,
+    Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     OneOf: match_one_of,
     Many: match_many,
     Not: match_not,
