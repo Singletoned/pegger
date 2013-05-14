@@ -10,16 +10,16 @@ import pegger as pg
 def test_match_some():
     word_a = pg.Some('a')
 
-    match, rest = pg.match_some("a", word_a, "word_a")
+    match, rest = word_a("a", "word_a")
     assert match == ['word_a', "a"]
     assert rest == ""
 
-    match, rest = pg.match_some("aab", word_a, "word_a")
+    match, rest = word_a("aab", "word_a")
     assert match == ['word_a', "aa"]
     assert rest == "b"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_some("ccc", word_a, "word_a")
+        match, rest = word_a("ccc", "word_a")
 
 def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
@@ -710,8 +710,9 @@ def test_parse_string_ab():
         result = pg.parse_string("cab", word_ab)
 
 def test_parse_string_some_a():
-    def word_a():
-        return pg.Some('a')
+    word_a = pg.NamedPattern(
+        'word_a',
+        pg.Some('a'))
 
     result = pg.parse_string("aa", word_a)
     assert result == ['word_a', "aa"]

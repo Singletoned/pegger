@@ -56,10 +56,6 @@ class EOF(Matcher):
     pass
 
 
-class Some(PatternMatcher):
-    """A matcher that matches any one char repeatedly"""
-
-
 class Ignore(PatternMatcher):
     """A matcher that matches any one char repeatedly"""
 
@@ -124,19 +120,32 @@ class NamedPattern(object):
         self.pattern = pattern
 
 
-def match_some(text, pattern, name):
+class PatternCreator(object):
+    """A pattern creator"""
+    def __init__(self, pattern):
+        self.pattern = pattern
+
+    def __call__(self, text, name=""):
+        return self.match(text, name)
+
+    def __repr__(self):
+        return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
+
+
+class Some(PatternCreator):
     """Match the given char repeatedly"""
-    match = []
-    rest = list(text)
-    while rest:
-        char = rest[0]
-        if pattern.pattern == char:
-            match.append(rest.pop(0))
-        else:
-            break
-    if not match:
-        raise NoPatternFound
-    return ([name, "".join(match)], "".join(rest))
+    def match(self, text, name=""):
+        match = []
+        rest = list(text)
+        while rest:
+            char = rest[0]
+            if self.pattern == char:
+                match.append(rest.pop(0))
+            else:
+                break
+        if not match:
+            raise NoPatternFound
+        return ([name, "".join(match)], "".join(rest))
 
 def match_words(text, pattern, name):
     "Match everything that is part of pattern.letters"
@@ -408,7 +417,7 @@ matchers = {
     str: match_text,
     unicode: match_text,
     AllOf: match_all_of,
-    Some: match_some,
+    Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: match_words,
     Ignore: match_ignore,
     OneOf: match_one_of,
@@ -425,13 +434,16 @@ matchers = {
 
 def do_parse(text, pattern):
     """Dispatch to the correct function based on the type of the pattern"""
-    pattern, pattern_name, pattern_type = get_pattern_info(pattern)
-    try:
-        matcher_func = matchers[pattern_type]
-        result = matcher_func(text, pattern, pattern_name)
-        return result
-    except KeyError:
-        raise UnknownMatcherType
+    if isinstance(pattern, PatternCreator):
+        return pattern(text)
+    else:
+        pattern, pattern_name, pattern_type = get_pattern_info(pattern)
+        try:
+            matcher_func = matchers[pattern_type]
+            result = matcher_func(text, pattern, pattern_name)
+            return result
+        except KeyError:
+            raise UnknownMatcherType(pattern_type)
 
 def parse_string(text, pattern):
     match, rest = do_parse(text, pattern)
