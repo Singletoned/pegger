@@ -356,35 +356,35 @@ floosit"""
 def test_match_not():
     not_a = pg.Not("a")
 
-    match, rest = pg.match_not("b", not_a, 'not_a')
+    match, rest = not_a("b", 'not_a')
     assert match == ['not_a', "b"]
     assert rest == ""
 
-    match, rest = pg.match_not("ba", not_a, 'not_a')
+    match, rest = not_a("ba", 'not_a')
     assert match == ['not_a', "b"]
     assert rest == "a"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_not("abc", not_a, 'not_a')
+        match, rest = not_a("abc", 'not_a')
 
-    match, rest = pg.match_not("bcd", not_a, 'not_a')
+    match, rest = not_a("bcd", 'not_a')
     assert match == ['not_a', "b"]
     assert rest == "cd"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_not("", not_a, 'not_a')
+        match, rest = not_a("", 'not_a')
 
     not_a_or_b = pg.Not(pg.OneOf("a", "b"))
 
-    match, rest = pg.match_not("cca", not_a_or_b, 'not_a_or_b')
+    match, rest = not_a_or_b("cca", 'not_a_or_b')
     assert match == ['not_a_or_b', "c"]
     assert rest == "ca"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_not("abc", not_a_or_b, 'not_a_or_b')
+        match, rest = not_a_or_b("abc", 'not_a_or_b')
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_not("bbc", not_a_or_b, 'not_a_or_b')
+        match, rest = not_a_or_b("bbc", 'not_a_or_b')
 
 def test_match_optional():
     optional_a = pg.Optional("a")

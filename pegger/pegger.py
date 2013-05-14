@@ -56,10 +56,6 @@ class EOF(Matcher):
     pass
 
 
-class Not(PatternMatcher):
-    """A matcher that matches any string that isn't the pattern"""
-
-
 class Join(PatternMatcher):
     "A matcher that joins together any consecutive strings"
 
@@ -280,16 +276,17 @@ def match_many(text, pattern, name):
             result.append("")
         return (result, rest)
 
-def match_not(text, pattern, name):
+class Not(PatternCreator):
     """Match a character if text doesn't start with pattern"""
-    if not text:
-        raise NoPatternFound
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        return ([name, text[0]], text[1:])
-    else:
-        raise NoPatternFound
+    def match(self, text, name):
+        if not text:
+            raise NoPatternFound
+        try:
+            match, rest = do_parse(text, self.pattern)
+        except NoPatternFound:
+            return ([name, text[0]], text[1:])
+        else:
+            raise NoPatternFound
 
 def match_optional(text, pattern, name):
     """Match pattern if it's there"""
@@ -419,7 +416,7 @@ matchers = {
     Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     OneOf: match_one_of,
     Many: match_many,
-    Not: match_not,
+    Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Optional: match_optional,
     Indented: match_indented,
     Escaped: match_escaped,
