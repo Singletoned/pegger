@@ -10,7 +10,11 @@ class NoPatternFound(Exception):
     pass
 
 class UnknownMatcherType(Exception):
-    pass
+    def __init__(self, pattern_type):
+        self.pattern_type = pattern_type
+
+    def __str__(self):
+        return "%s was not found" % self.pattern_type
 
 class Matcher(object):
     """A base matcher"""
@@ -32,39 +36,6 @@ class OptionsMatcher(Matcher):
 
     def __repr__(self):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
-
-
-class CountOf(Matcher):
-    """A matcher that matches count items"""
-    def __init__(self, count, pattern):
-        self.count = count
-        self.pattern = pattern
-
-
-class Insert(Matcher):
-    """A matcher that inserts some text into the result"""
-    def __init__(self, text):
-        self.text = text
-
-
-class Some(PatternMatcher):
-    """A matcher that matches any one char repeatedly"""
-
-
-class Ignore(PatternMatcher):
-    """A matcher that matches any one char repeatedly"""
-
-
-class Not(PatternMatcher):
-    """A matcher that matches any string that isn't the pattern"""
-
-
-class Join(PatternMatcher):
-    "A matcher that joins together any consecutive strings"
-
-
-class Lookahead(PatternMatcher):
-    """A matcher that looks ahead for a pattern and removes it from there"""
 
 
 class OneOf(OptionsMatcher):
@@ -91,10 +62,6 @@ class Words(object):
         return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
 
 
-class Optional(PatternMatcher):
-    """A matcher that matches the pattern if it's available"""
-
-
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
     def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
@@ -108,19 +75,44 @@ class Escaped(PatternMatcher):
     """A matcher that html-escapes the text it matches"""
 
 
-def match_some(text, pattern, name):
+class NamedPattern(object):
+    """A pattern with a name"""
+    def __init__(self, name, pattern):
+        self.name = name
+        self.pattern = pattern
+
+
+class BasePatternCreator(object):
+    def __call__(self, text, name=""):
+        return self.match(text, name)
+
+    def __repr__(self):
+        return "<%s>" % (self.__class__.__name__)
+
+
+class PatternCreator(BasePatternCreator):
+    """A pattern creator"""
+    def __init__(self, pattern):
+        self.pattern = pattern
+
+    def __repr__(self):
+        return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
+
+
+class Some(PatternCreator):
     """Match the given char repeatedly"""
-    match = []
-    rest = list(text)
-    while rest:
-        char = rest[0]
-        if pattern.pattern == char:
-            match.append(rest.pop(0))
-        else:
-            break
-    if not match:
-        raise NoPatternFound
-    return ([name, "".join(match)], "".join(rest))
+    def match(self, text, name=""):
+        match = []
+        rest = list(text)
+        while rest:
+            char = rest[0]
+            if self.pattern == char:
+                match.append(rest.pop(0))
+            else:
+                break
+        if not match:
+            raise NoPatternFound
+        return ([name, "".join(match)], "".join(rest))
 
 def match_words(text, pattern, name):
     "Match everything that is part of pattern.letters"
@@ -146,6 +138,15 @@ def match_text(text, pattern, name):
     else:
         raise NoPatternFound
 
+class Ignore(PatternCreator):
+    "Match the pattern, but return no result"
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+            return ([], rest)
+        except NoPatternFound:
+            raise NoPatternFound
+
 def match_all_of(text, pattern, name):
     "Match each of the patterns in pattern"
     result = [name]
@@ -157,14 +158,6 @@ def match_all_of(text, pattern, name):
     if result == [name]:
         result.append("")
     return (result, rest)
-
-def match_ignore(text, pattern, name):
-    "Match the pattern, but return no result"
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-        return ([], rest)
-    except NoPatternFound:
-        raise NoPatternFound
 
 def match_one_of(text, pattern, name):
     """Match one of the patterns given"""
@@ -181,31 +174,55 @@ def match_one_of(text, pattern, name):
             continue
     raise NoPatternFound
 
-def match_count_of(text, pattern, name):
-    result = [name]
-    rest = text
-    for i in range(pattern.count):
-        try:
-            match, rest = do_parse(rest, pattern.pattern)
-        except NoPatternFound:
-            raise NoPatternFound("Only %s of the given pattern were found" % i)
+
+class CountOf(PatternCreator):
+    """A matcher that matches count items"""
+    def __init__(self, count, pattern):
+        self.count = count
+        self.pattern = pattern
+
+    def match(self, text, name):
+        result = [name]
+        rest = text
+        for i in range(self.count):
+            try:
+                match, rest = do_parse(rest, self.pattern)
+            except NoPatternFound:
+                raise NoPatternFound("Only %s of the given pattern were found" % i)
+            else:
+                if match:
+                    _add_match_to_result(result, match)
+        return (result, rest)
+
+
+class Insert(PatternCreator):
+    """A matcher that inserts some text into the result"""
+    def __init__(self, text):
+        self.text = text
+
+    def match(self, text, name):
+        return ([name, self.text], text)
+
+
+class EOF(BasePatternCreator):
+    """A matcher that matches the end of the string"""
+    def match(self, text, name):
+        if not text:
+            return ([name, ''], text)
         else:
-            if match:
-                _add_match_to_result(result, match)
-    return (result, rest)
+            raise NoPatternFound("No EOF found")
 
-def match_insert(text, pattern, name):
-    return ([name, pattern.text], text)
 
-def match_join(text, pattern, name):
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        raise NoPatternFound
-    result = [name]
-    _add_match_to_result(result, match)
-    result = filter_match(result)
-    return (result, rest)
+class Join(PatternCreator):
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+        except NoPatternFound:
+            raise NoPatternFound
+        result = [name]
+        _add_match_to_result(result, match)
+        result = filter_match(result)
+        return (result, rest)
 
 def filter_match(match, recursive=False):
     "Concatenates consecutive characters"
@@ -252,23 +269,27 @@ def match_many(text, pattern, name):
             result.append("")
         return (result, rest)
 
-def match_not(text, pattern, name):
+class Not(PatternCreator):
     """Match a character if text doesn't start with pattern"""
-    if not text:
-        raise NoPatternFound
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        return ([name, text[0]], text[1:])
-    else:
-        raise NoPatternFound
+    def match(self, text, name):
+        if not text:
+            raise NoPatternFound
+        try:
+            match, rest = do_parse(text, self.pattern)
+        except NoPatternFound:
+            return ([name, text[0]], text[1:])
+        else:
+            raise NoPatternFound
 
-def match_optional(text, pattern, name):
-    """Match pattern if it's there"""
-    try:
-        return do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        return ([], text)
+
+class Optional(PatternCreator):
+    """A matcher that matches the pattern if it's available"""
+    def match(self, text, name):
+        """Match pattern if it's there"""
+        try:
+            return do_parse(text, self.pattern)
+        except NoPatternFound:
+            return ([], text)
 
 def _get_current_indentation(text, pattern=None):
     "Finds the current number of spaces at the start"
@@ -361,19 +382,20 @@ def match_escaped(text, pattern, name):
     _add_match_to_result(result, escaped_match)
     return (result, rest)
 
-def match_lookahead(text, pattern, name):
+class Lookahead(PatternCreator):
     """Match the pattern somewhere ahead and remove it from there"""
-    unmatched = ""
-    while text:
-        try:
-            match, rest = do_parse(text, pattern.pattern)
-            result = [name]
-            _add_match_to_result(result, match)
-            return (result, unmatched+rest)
-        except NoPatternFound:
-            unmatched = unmatched + text[0]
-            text = text[1:]
-    raise NoPatternFound
+    def match(self, text, name):
+        unmatched = ""
+        while text:
+            try:
+                match, rest = do_parse(text, self.pattern)
+                result = [name]
+                _add_match_to_result(result, match)
+                return (result, unmatched+rest)
+            except NoPatternFound:
+                unmatched = unmatched + text[0]
+                text = text[1:]
+        raise NoPatternFound
 
 def _add_match_to_result(result, match):
     "If the match has no name, extend the result"
@@ -386,29 +408,33 @@ matchers = {
     str: match_text,
     unicode: match_text,
     AllOf: match_all_of,
-    Some: match_some,
+    Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: match_words,
-    Ignore: match_ignore,
+    Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     OneOf: match_one_of,
     Many: match_many,
-    Not: match_not,
-    Optional: match_optional,
+    Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
+    Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Indented: match_indented,
     Escaped: match_escaped,
-    Insert: match_insert,
-    CountOf: match_count_of,
-    Join: match_join,
+    Insert: lambda text, pattern, pattern_name: pattern(text, pattern_name),
+    CountOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
+    Join: lambda text, pattern, pattern_name: pattern(text, pattern_name),
+    EOF: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     }
 
 def do_parse(text, pattern):
     """Dispatch to the correct function based on the type of the pattern"""
-    pattern, pattern_name, pattern_type = get_pattern_info(pattern)
-    try:
-        matcher_func = matchers[pattern_type]
-        result = matcher_func(text, pattern, pattern_name)
-        return result
-    except KeyError:
-        raise UnknownMatcherType
+    if isinstance(pattern, BasePatternCreator):
+        return pattern(text)
+    else:
+        pattern, pattern_name, pattern_type = get_pattern_info(pattern)
+        try:
+            matcher_func = matchers[pattern_type]
+            result = matcher_func(text, pattern, pattern_name)
+            return result
+        except KeyError:
+            raise UnknownMatcherType(pattern_type)
 
 def parse_string(text, pattern):
     match, rest = do_parse(text, pattern)
@@ -416,7 +442,10 @@ def parse_string(text, pattern):
 
 def get_pattern_info(pattern):
     pattern_name = ""
-    if callable(pattern):
+    if isinstance(pattern, NamedPattern):
+        pattern_name = pattern.name
+        pattern = pattern.pattern
+    elif callable(pattern):
         pattern_name = pattern.__name__
         pattern = pattern()
         if pattern_name == "<lambda>":
