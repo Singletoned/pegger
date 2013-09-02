@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import utils
+from pegger import utils
 
 def test_deep_bool():
     assert not utils.deep_bool([''])
