@@ -49,6 +49,17 @@ class BasePatternCreator(object):
 class PatternCreator(BasePatternCreator):
     """A pattern creator"""
     def __init__(self, pattern):
+        if isinstance(pattern, basestring):
+            pattern = Text(pattern)
+        self.pattern = pattern
+
+    def __repr__(self):
+        return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
+
+
+class TextPatternCreator(BasePatternCreator):
+    """A pattern creator"""
+    def __init__(self, pattern):
         self.pattern = pattern
 
     def __repr__(self):
@@ -58,13 +69,18 @@ class PatternCreator(BasePatternCreator):
 class OptionsPatternCreator(BasePatternCreator):
     """A pattern creator with a list of options"""
     def __init__(self, *options):
-        self.options = options
+        processed_options = []
+        for option in options:
+            if isinstance(option, basestring):
+                option = Text(option)
+            processed_options.append(option)
+        self.options = tuple(processed_options)
 
     def __repr__(self):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class Some(PatternCreator):
+class Some(TextPatternCreator):
     """Match the given char repeatedly"""
     def match(self, text, name=""):
         match = []
@@ -105,7 +121,8 @@ class Words(PatternCreator):
         return ([name, "".join(match)], "".join(rest))
 
 
-class Text(PatternCreator):
+
+class Text(TextPatternCreator):
     """If the pattern matches the beginning of the text, parser it and
     return the rest"""
     def match(self, text, name):
@@ -173,6 +190,8 @@ class CountOf(PatternCreator):
     """A matcher that matches count items"""
     def __init__(self, count, pattern):
         self.count = count
+        if isinstance(pattern, basestring):
+            pattern = Text(pattern)
         self.pattern = pattern
 
     def match(self, text, name):
@@ -325,6 +344,12 @@ def _get_current_indentation(text, pattern=None):
 class Indented(PatternCreator):
     """Remove indentation before matching"""
     def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
+        if isinstance(pattern, basestring):
+            pattern = Text(pattern)
+        if isinstance(indent_pattern, basestring):
+            indent_pattern = Text(indent_pattern)
+        if isinstance(initial_indent, basestring):
+            initial_indent = Text(initial_indent)
         self.pattern = pattern
         self.optional = optional
         self.initial_indent = initial_indent

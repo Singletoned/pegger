@@ -550,7 +550,7 @@ class TestMatchIndented(unittest.TestCase):
         lines = pg.Many(
             pg.OneOf(
                 pg.Words(),
-                "\n"))
+                pg.Text("\n")))
         indented_text = pg.Indented(
             lines,
             indent_pattern="> ")
@@ -981,13 +981,13 @@ def test_get_pattern_info():
 def test_reprs():
     # Pattern matchers
     assert repr(pg.Some("a")) == "<Some pattern='a'>"
-    assert repr(pg.Ignore("#")) == "<Ignore pattern='#'>"
-    assert repr(pg.Not("#")) == "<Not pattern='#'>"
-    assert repr(pg.Optional("#")) == "<Optional pattern='#'>"
+    assert repr(pg.Ignore("#")) == "<Ignore pattern=<Text pattern='#'>>"
+    assert repr(pg.Not("#")) == "<Not pattern=<Text pattern='#'>>"
+    assert repr(pg.Optional("#")) == "<Optional pattern=<Text pattern='#'>>"
 
     # Option matchers
-    assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"
-    assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
+    assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=(<Text pattern='abc'>, <Not pattern=<Text pattern='#'>>)>"
+    assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=(<Text pattern='abc'>, <Not pattern=<Text pattern='#'>>)>"
     assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"
 
 def test_add_match_to_result():
