@@ -10,35 +10,6 @@ import utils
 class NoPatternFound(Exception):
     pass
 
-class UnknownMatcherType(Exception):
-    def __init__(self, pattern_type):
-        self.pattern_type = pattern_type
-
-    def __str__(self):
-        return "%s was not found" % self.pattern_type
-
-class Matcher(object):
-    """A base matcher"""
-
-
-class PatternMatcher(Matcher):
-    """A base Matcher that has a pattern"""
-    def __init__(self, pattern):
-        self.pattern = pattern
-
-    def __repr__(self):
-        return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
-
-
-class OptionsMatcher(Matcher):
-    """A base Matcher with a list of options"""
-    def __init__(self, *options):
-        self.options = options
-
-    def __repr__(self):
-        return "<%s options=%r>" % (self.__class__.__name__, self.options)
-
-
 class BasePatternCreator(object):
     def __call__(self, text, name=""):
         return self.match(text, name)
@@ -489,16 +460,3 @@ def do_parse(text, pattern):
 def parse_string(text, pattern):
     match, rest = pattern(text)
     return match
-
-def get_pattern_info(pattern):
-    pattern_name = ""
-    if isinstance(pattern, NamedPattern):
-        pattern_name = pattern.name
-        pattern = pattern.pattern
-    elif callable(pattern):
-        pattern_name = pattern.__name__
-        pattern = pattern()
-        if pattern_name == "<lambda>":
-            pattern_name = ""
-    pattern_type = type(pattern)
-    return (pattern, pattern_name, pattern_type)
