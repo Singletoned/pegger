@@ -38,10 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class AllOf(OptionsMatcher):
-    """A matcher that matches the all of the patterns given"""
-
-
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
     letters = string.uppercase + string.lowercase + " .,"
@@ -148,17 +144,19 @@ class Ignore(PatternCreator):
         except NoPatternFound:
             raise NoPatternFound
 
-def match_all_of(text, pattern, name):
+
+class AllOf(OptionsPatternCreator):
     "Match each of the patterns in pattern"
-    result = [name]
-    rest = text
-    for sub_pattern in pattern.options:
-        match, rest = do_parse(rest, sub_pattern)
-        if match:
-            _add_match_to_result(result, match)
-    if result == [name]:
-        result.append("")
-    return (result, rest)
+    def match(self, text, name):
+        result = [name]
+        rest = text
+        for sub_pattern in self.options:
+            match, rest = do_parse(rest, sub_pattern)
+            if match:
+                _add_match_to_result(result, match)
+        if result == [name]:
+            result.append("")
+        return (result, rest)
 
 
 class OneOf(OptionsPatternCreator):
@@ -416,7 +414,7 @@ def _add_match_to_result(result, match):
 matchers = {
     str: match_text,
     unicode: match_text,
-    AllOf: match_all_of,
+    AllOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: match_words,
     Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),

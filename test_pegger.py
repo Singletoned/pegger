@@ -71,18 +71,18 @@ def test_match_all_of():
 
     word_ab = pg.AllOf(letter_a, letter_b)
 
-    match, rest = pg.match_all_of("ab", word_ab, "word_ab")
+    match, rest = word_ab.match("ab", "word_ab")
     assert match == ['word_ab', ['letter_a', "a"], ['letter_b', "b"]]
     assert rest == ""
 
     word_abc = pg.AllOf(letter_a, pg.Words())
 
     expected = ['word_ab', ['letter_a', "a"], "bc"]
-    match, rest = pg.match_all_of("abc", word_abc, "word_ab")
+    match, rest = word_abc.match("abc", "word_ab")
     assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_all_of("abc!", word_abc, "")
+    match, rest = word_abc.match("abc!", "")
     assert match == ['', ['letter_a', "a"], "bc"]
     assert rest == "!"
 
@@ -91,17 +91,17 @@ def test_match_all_of():
         pg.Words(),
         pg.Ignore("*"))
 
-    match, rest = pg.match_all_of("*abc*", emphasis, "emphasis")
+    match, rest = emphasis("*abc*", "emphasis")
     assert match == ['emphasis', "abc"]
 
     with py.test.raises(pg.NoPatternFound):
-        result = pg.match_all_of("cab", word_ab, "word_ab")
+        result = word_ab("cab", "word_ab")
 
     ignore_ab = pg.AllOf(
         pg.Ignore("a"),
         pg.Ignore("b"))
 
-    match, rest = pg.match_all_of("ab", ignore_ab, "ignore_ab")
+    match, rest = ignore_ab("ab", "ignore_ab")
     assert match == ['ignore_ab', ""]
     assert rest == ""
 
@@ -348,7 +348,7 @@ floosit"""
         " : ",
         'floosit']
 
-    match, rest = pg.match_all_of(data, joined_lines, 'joined_lines')
+    match, rest = joined_lines(data, 'joined_lines')
     assert match == expected
     assert rest == ""
 
@@ -419,7 +419,7 @@ def test_match_eof():
     text_then_eof = pg.AllOf(
         "a",
         pg.EOF())
-    match, rest = pg.match_all_of("a", text_then_eof, 'text_then_eof')
+    match, rest = text_then_eof("a", 'text_then_eof')
     assert match == ['text_then_eof', 'a', '']
 
 
