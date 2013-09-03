@@ -38,13 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class NamedPattern(object):
-    """A pattern with a name"""
-    def __init__(self, name, pattern):
-        self.name = name
-        self.pattern = pattern
-
-
 class BasePatternCreator(object):
     def __call__(self, text, name=""):
         return self.match(text, name)
@@ -121,6 +114,18 @@ class Text(PatternCreator):
             return ([name, self.pattern], rest)
         else:
             raise NoPatternFound
+
+
+class NamedPattern(PatternCreator):
+    """A pattern with a name"""
+    def __init__(self, name, pattern):
+        self.name = name
+        if isinstance(pattern, basestring):
+            pattern = Text(pattern)
+        self.pattern = pattern
+
+    def __call__(self, text):
+        return self.pattern(text, self.name)
 
 
 class Ignore(PatternCreator):
