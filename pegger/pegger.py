@@ -38,15 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class Indented(PatternMatcher):
-    """A matcher that removes indentation from the text before matching the pattern"""
-    def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
-        self.pattern = pattern
-        self.optional = optional
-        self.initial_indent = initial_indent
-        self.indent_pattern = indent_pattern
-
-
 class Escaped(PatternMatcher):
     """A matcher that html-escapes the text it matches"""
 
@@ -327,28 +318,36 @@ def _get_current_indentation(text, pattern=None):
                 return (indent, text)
         return (indent, text)
 
-def match_indented(text, pattern, name):
+
+class Indented(PatternCreator):
     """Remove indentation before matching"""
-    indent, text = _get_current_indentation(text, pattern)
-    if (not indent) and (not pattern.optional):
-        raise NoPatternFound
-    lines = text.split("\n")
-    indented_lines = _get_indented_lines(lines, indent)
-    other_lines = lines[len(indented_lines):]
-    indented_text = "\n".join(indented_lines)
-    try:
-        indented_match, indented_rest = do_parse(indented_text, pattern.pattern)
-    except NoPatternFound:
-        raise NoPatternFound
-    indented_rest = indented_rest.replace("\n", "\n"+indent)
-    rest_lines = [line for line in indented_rest.split("\n")]
-    rest_lines = rest_lines + other_lines
-    rest = "\n".join(rest_lines)
-    result = [name]
-    _add_match_to_result(result, indented_match)
-    if len(result) == 1:
-        result = result[0]
-    return (result, rest)
+    def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
+        self.pattern = pattern
+        self.optional = optional
+        self.initial_indent = initial_indent
+        self.indent_pattern = indent_pattern
+
+    def match(self, text, name):
+        indent, text = _get_current_indentation(text, self)
+        if (not indent) and (not self.optional):
+            raise NoPatternFound
+        lines = text.split("\n")
+        indented_lines = _get_indented_lines(lines, indent)
+        other_lines = lines[len(indented_lines):]
+        indented_text = "\n".join(indented_lines)
+        try:
+            indented_match, indented_rest = do_parse(indented_text, self.pattern)
+        except NoPatternFound:
+            raise NoPatternFound
+        indented_rest = indented_rest.replace("\n", "\n"+indent)
+        rest_lines = [line for line in indented_rest.split("\n")]
+        rest_lines = rest_lines + other_lines
+        rest = "\n".join(rest_lines)
+        result = [name]
+        _add_match_to_result(result, indented_match)
+        if len(result) == 1:
+            result = result[0]
+        return (result, rest)
 
 def _get_indented_lines(lines, indent):
     indented_lines = []
@@ -421,7 +420,7 @@ matchers = {
     Many: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    Indented: match_indented,
+    Indented: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Escaped: match_escaped,
     Insert: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     CountOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),

@@ -443,7 +443,7 @@ class TestMatchIndented(unittest.TestCase):
             'list_item', "A bullet"]
 
         with py.test.raises(pg.NoPatternFound):
-            match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+            match, rest = indented_bullets(data, 'indented_bullets')
 
     def test_with_optional(self):
         """Test that optional allows you to match without an indent"""
@@ -463,7 +463,7 @@ class TestMatchIndented(unittest.TestCase):
             'indented_bullets',
             ['list_item', "A bullet"]]
 
-        match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+        match, rest = indented_bullets(data, 'indented_bullets')
         assert match == expected
         assert rest == ""
 
@@ -482,7 +482,7 @@ class TestMatchIndented(unittest.TestCase):
             ['paragraph', "Some text"]]
 
         for data in [data_with_spaces, data_with_tabs]:
-            match, rest = pg.match_indented(data, indented_text, 'indented_text')
+            match, rest = indented_text(data, 'indented_text')
             assert match == expected
             assert rest == ""
 
@@ -498,7 +498,7 @@ class TestMatchIndented(unittest.TestCase):
             'indented_text',
             "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == ""
 
@@ -512,7 +512,7 @@ class TestMatchIndented(unittest.TestCase):
 
         expected = [None, "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, None)
+        match, rest = indented_text.match(data, None)
         assert match == expected
         assert rest == ""
 
@@ -526,7 +526,7 @@ class TestMatchIndented(unittest.TestCase):
 
         expected = ['indented_text', "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == "\n"
 
@@ -541,7 +541,7 @@ class TestMatchIndented(unittest.TestCase):
         expected = ['indented_text', "Some text"]
         expected_rest = "\n  Unmatched text\n  More unmatched text"
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == expected_rest
 
@@ -568,7 +568,7 @@ class TestMatchIndented(unittest.TestCase):
                     "\n",
                     "non whitespace"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == ""
 
@@ -601,7 +601,7 @@ def test_match_indented_nested_bullets():
         ['indented_bullets',
          ['bullet', "Line Two"]]]
 
-    match, rest = pg.match_indented(data, indented_bullets(), 'indented_bullets')
+    match, rest = indented_bullets().match(data, 'indented_bullets')
     assert match == expected
     assert rest == "\n"
 
@@ -627,7 +627,7 @@ def test_indented_bullet():
         ['paragraph',
          "Paragraph Two"]]
 
-    match, rest = pg.match_indented(data, indented_paragraphs, "indented_paragraphs")
+    match, rest = indented_paragraphs.match(data, "indented_paragraphs")
     assert match == expected
 
 def test_match_escaped():
