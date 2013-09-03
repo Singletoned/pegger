@@ -38,10 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class OneOf(OptionsMatcher):
-    """A matcher that matches the first matching matcher"""
-
-
 class AllOf(OptionsMatcher):
     """A matcher that matches the all of the patterns given"""
 
@@ -164,20 +160,22 @@ def match_all_of(text, pattern, name):
         result.append("")
     return (result, rest)
 
-def match_one_of(text, pattern, name):
+
+class OneOf(OptionsPatternCreator):
     """Match one of the patterns given"""
-    for sub_pattern in pattern.options:
-        try:
-            match, rest = do_parse(text, sub_pattern)
-            result = [name]
-            if utils.deep_bool(match):
-                _add_match_to_result(result, match)
-            else:
-                result.append("")
-            return (result, rest)
-        except NoPatternFound:
-            continue
-    raise NoPatternFound
+    def match(self, text, name):
+        for sub_pattern in self.options:
+            try:
+                match, rest = do_parse(text, sub_pattern)
+                result = [name]
+                if utils.deep_bool(match):
+                    _add_match_to_result(result, match)
+                else:
+                    result.append("")
+                return (result, rest)
+            except NoPatternFound:
+                continue
+        raise NoPatternFound
 
 
 class CountOf(PatternCreator):
@@ -422,7 +420,7 @@ matchers = {
     Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: match_words,
     Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    OneOf: match_one_of,
+    OneOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Many: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),

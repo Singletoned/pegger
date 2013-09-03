@@ -136,19 +136,19 @@ def test_match_one_of():
             emphasis)
 
     expected = ['phrase', "b", "o", "l", "d"]
-    match, rest = pg.match_one_of("*bold*", phrase, "phrase")
+    match, rest = phrase.match("*bold*", "phrase")
     assert match == expected
     assert rest == ""
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_one_of("123", phrase, "phrase")
+        match, rest = phrase.match("123", "phrase")
 
-    match, rest = pg.match_one_of("text", phrase, "phrase")
+    match, rest = phrase.match("text", "phrase")
     assert match == ['phrase', "text"]
     assert rest == ""
 
     # Test match with no name
-    match, rest = pg.match_one_of("text", phrase, "")
+    match, rest = phrase.match("text", "")
     assert match == ['', "text"]
     assert rest == ""
 
@@ -160,7 +160,7 @@ def test_match_one_of_empty():
 
     data = "*"
     expected = ['bullet', ""]
-    match, rest = pg.match_one_of(data, bullet, 'bullet')
+    match, rest = bullet.match(data, 'bullet')
     assert match == expected
     assert rest == ""
 
