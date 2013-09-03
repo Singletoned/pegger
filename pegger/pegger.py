@@ -112,14 +112,16 @@ class Words(PatternCreator):
         return ([name, "".join(match)], "".join(rest))
 
 
-def match_text(text, pattern, name):
+class Text(PatternCreator):
     """If the pattern matches the beginning of the text, parser it and
     return the rest"""
-    if text.startswith(pattern):
-        rest = text[len(pattern):]
-        return ([name, pattern], rest)
-    else:
-        raise NoPatternFound
+    def match(self, text, name):
+        if text.startswith(self.pattern):
+            rest = text[len(self.pattern):]
+            return ([name, self.pattern], rest)
+        else:
+            raise NoPatternFound
+
 
 class Ignore(PatternCreator):
     "Match the pattern, but return no result"
@@ -409,8 +411,8 @@ def _add_match_to_result(result, match):
         result.append(match)
 
 matchers = {
-    str: match_text,
-    unicode: match_text,
+    str: lambda text, pattern, pattern_name: Text(pattern)(text, pattern_name),
+    unicode: lambda text, pattern, pattern_name: Text(pattern)(text, pattern_name),
     AllOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Words: lambda text, pattern, pattern_name: pattern(text, pattern_name),

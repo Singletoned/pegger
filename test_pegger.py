@@ -25,18 +25,18 @@ def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
     of the text and returns the rest"""
 
-    letter_a = "a"
+    letter_a = pg.Text("a")
 
-    match, rest = pg.match_text("ab", letter_a, "letter_a")
+    match, rest = letter_a("ab", "letter_a")
     assert match == ['letter_a', "a"]
     assert rest == "b"
 
-    match, rest = pg.match_text("aabc", letter_a, "letter_a")
+    match, rest = letter_a("aabc", "letter_a")
     assert match == ['letter_a', "a"]
     assert rest == "abc"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_text("ccc", letter_a, "letter_a")
+        match, rest = letter_a("ccc", "letter_a")
 
 def test_match_words():
     """Test that Words matches letters and punctuation"""
