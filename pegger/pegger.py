@@ -38,10 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class Escaped(PatternMatcher):
-    """A matcher that html-escapes the text it matches"""
-
-
 class NamedPattern(object):
     """A pattern with a name"""
     def __init__(self, name, pattern):
@@ -376,16 +372,19 @@ def do_escape(tree):
     else:
         return cgi.escape(tree)
 
-def match_escaped(text, pattern, name):
+
+class Escaped(PatternCreator):
     """Match the pattern and html escape the result"""
-    try:
-        match, rest = do_parse(text, pattern.pattern)
-    except NoPatternFound:
-        raise NoPatternFound
-    result = [name]
-    escaped_match = do_escape(match)
-    _add_match_to_result(result, escaped_match)
-    return (result, rest)
+    def match(self, text, name):
+        try:
+            match, rest = do_parse(text, self.pattern)
+        except NoPatternFound:
+            raise NoPatternFound
+        result = [name]
+        escaped_match = do_escape(match)
+        _add_match_to_result(result, escaped_match)
+        return (result, rest)
+
 
 class Lookahead(PatternCreator):
     """Match the pattern somewhere ahead and remove it from there"""
@@ -421,7 +420,7 @@ matchers = {
     Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Indented: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    Escaped: match_escaped,
+    Escaped: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Insert: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     CountOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Join: lambda text, pattern, pattern_name: pattern(text, pattern_name),

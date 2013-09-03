@@ -644,7 +644,7 @@ def test_match_escaped():
         'escaped_text',
         ['html_text', "&lt;p&gt;Some text&lt;/p&gt;"]]
 
-    match, rest = pg.match_escaped(data, escaped_text, 'escaped_text')
+    match, rest = escaped_text(data, 'escaped_text')
     assert match == expected
     assert rest == ""
 
