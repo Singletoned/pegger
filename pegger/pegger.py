@@ -99,6 +99,15 @@ class PatternCreator(BasePatternCreator):
         return "<%s pattern=%r>" % (self.__class__.__name__, self.pattern)
 
 
+class OptionsPatternCreator(BasePatternCreator):
+    """A pattern creator with a list of options"""
+    def __init__(self, *options):
+        self.options = options
+
+    def __repr__(self):
+        return "<%s options=%r>" % (self.__class__.__name__, self.options)
+
+
 class Some(PatternCreator):
     """Match the given char repeatedly"""
     def match(self, text, name=""):
