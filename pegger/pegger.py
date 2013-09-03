@@ -38,18 +38,6 @@ class OptionsMatcher(Matcher):
         return "<%s options=%r>" % (self.__class__.__name__, self.options)
 
 
-class Words(object):
-    """A matcher that matches any sequence of letters and spaces"""
-    letters = string.uppercase + string.lowercase + " .,"
-
-    def __init__(self, letters=None):
-        if letters:
-            self.letters = letters
-
-    def __repr__(self):
-        return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
-
-
 class Indented(PatternMatcher):
     """A matcher that removes indentation from the text before matching the pattern"""
     def __init__(self, pattern, optional=False, initial_indent=None, indent_pattern=None):
@@ -111,20 +99,31 @@ class Some(PatternCreator):
             raise NoPatternFound
         return ([name, "".join(match)], "".join(rest))
 
-def match_words(text, pattern, name):
+
+class Words(PatternCreator):
     "Match everything that is part of pattern.letters"
-    match = []
-    rest = list(text)
-    letters = pattern.letters
-    while rest:
-        char = rest[0]
-        if char in letters:
-            match.append(rest.pop(0))
-        else:
-            break
-    if not match:
-        raise NoPatternFound
-    return ([name, "".join(match)], "".join(rest))
+    letters = string.uppercase + string.lowercase + " .,"
+
+    def __init__(self, letters=None):
+        if letters:
+            self.letters = letters
+
+    def __repr__(self):
+        return "<%s letters=%r>" % (self.__class__.__name__, self.letters)
+
+    def match(self, text, name):
+        match = []
+        rest = list(text)
+        while rest:
+            char = rest[0]
+            if char in self.letters:
+                match.append(rest.pop(0))
+            else:
+                break
+        if not match:
+            raise NoPatternFound
+        return ([name, "".join(match)], "".join(rest))
+
 
 def match_text(text, pattern, name):
     """If the pattern matches the beginning of the text, parser it and
@@ -416,7 +415,7 @@ matchers = {
     unicode: match_text,
     AllOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Some: lambda text, pattern, pattern_name: pattern(text, pattern_name),
-    Words: match_words,
+    Words: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     OneOf: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Many: lambda text, pattern, pattern_name: pattern(text, pattern_name),

@@ -42,20 +42,20 @@ def test_match_words():
     """Test that Words matches letters and punctuation"""
     plain = pg.Words()
 
-    match, rest = pg.match_words("some words", plain, 'plain')
+    match, rest = plain.match("some words", 'plain')
     assert match == ['plain', "some words"]
     assert rest == ""
 
     # Match with no name
-    match, rest = pg.match_words("some words", plain, '')
+    match, rest = plain.match("some words", '')
     assert match == ['', "some words"]
     assert rest == ""
 
-    match, rest = pg.match_words("some words 123", plain, 'plain')
+    match, rest = plain.match("some words 123", 'plain')
     assert match == ['plain', "some words "]
     assert rest == "123"
 
-    match, rest = pg.match_words("Some words, and punctuation.", plain, 'plain')
+    match, rest = plain.match("Some words, and punctuation.", 'plain')
     assert match == ['plain', "Some words, and punctuation."]
     assert rest == ""
 
