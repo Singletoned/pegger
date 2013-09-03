@@ -2,6 +2,7 @@
 
 import string
 import cgi
+import functools
 
 import utils
 
@@ -149,7 +150,7 @@ class Ignore(PatternCreator):
     "Match the pattern, but return no result"
     def match(self, text, name):
         try:
-            match, rest = do_parse(text, self.pattern)
+            match, rest = self.pattern(text)
             return ([], rest)
         except NoPatternFound:
             raise NoPatternFound
@@ -161,7 +162,7 @@ class AllOf(OptionsPatternCreator):
         result = [name]
         rest = text
         for sub_pattern in self.options:
-            match, rest = do_parse(rest, sub_pattern)
+            match, rest = sub_pattern(rest)
             if match:
                 _add_match_to_result(result, match)
         if result == [name]:
@@ -174,7 +175,7 @@ class OneOf(OptionsPatternCreator):
     def match(self, text, name):
         for sub_pattern in self.options:
             try:
-                match, rest = do_parse(text, sub_pattern)
+                match, rest = sub_pattern(text)
                 result = [name]
                 if utils.deep_bool(match):
                     _add_match_to_result(result, match)
@@ -184,6 +185,19 @@ class OneOf(OptionsPatternCreator):
             except NoPatternFound:
                 continue
         raise NoPatternFound
+
+
+def lazy(func):
+    """A decorator that allows a pattern to refer to itself"""
+    @functools.wraps(func)
+    def inner(text, name=''):
+        pattern = func()
+        if not name:
+            name = func.__name__
+            if name == "<lambda>":
+                name = ""
+        return pattern(text, name)
+    return inner
 
 
 class CountOf(PatternCreator):
@@ -199,7 +213,7 @@ class CountOf(PatternCreator):
         rest = text
         for i in range(self.count):
             try:
-                match, rest = do_parse(rest, self.pattern)
+                match, rest = self.pattern(rest)
             except NoPatternFound:
                 raise NoPatternFound("Only %s of the given pattern were found" % i)
             else:
@@ -232,7 +246,7 @@ class EOF(BasePatternCreator):
 class Join(PatternCreator):
     def match(self, text, name):
         try:
-            match, rest = do_parse(text, self.pattern)
+            match, rest = self.pattern(text)
         except NoPatternFound:
             raise NoPatternFound
         result = [name]
@@ -271,7 +285,7 @@ class Many(OptionsPatternCreator):
         while rest:
             for sub_pattern in self.options:
                 try:
-                    match, rest = do_parse(rest, sub_pattern)
+                    match, rest = sub_pattern(rest)
                     match_made = True
                     if utils.deep_bool(match):
                         _add_match_to_result(result, match)
@@ -294,7 +308,7 @@ class Not(PatternCreator):
         if not text:
             raise NoPatternFound
         try:
-            match, rest = do_parse(text, self.pattern)
+            match, rest = self.pattern(text)
         except NoPatternFound:
             return ([name, text[0]], text[1:])
         else:
@@ -306,7 +320,7 @@ class Optional(PatternCreator):
     def match(self, text, name):
         """Match pattern if it's there"""
         try:
-            return do_parse(text, self.pattern)
+            return self.pattern(text)
         except NoPatternFound:
             return ([], text)
 
@@ -314,7 +328,7 @@ def _get_current_indentation(text, pattern=None):
     "Finds the current number of spaces at the start"
     if pattern and pattern.initial_indent:
         try:
-            match, rest = do_parse(text, pattern.initial_indent)
+            match, rest = pattern.initial_indent(text)
         except NoPatternFound:
             raise NoPatternFound
         match = filter_match(match, recursive=True)
@@ -327,7 +341,7 @@ def _get_current_indentation(text, pattern=None):
         rest = indent + rest
         return (indent, rest)
     elif pattern and pattern.indent_pattern:
-        indent, rest = do_parse(text, pattern.indent_pattern)
+        indent, rest = pattern.indent_pattern(text)
         indent = indent[1]
         return (indent, text)
     else:
@@ -364,7 +378,7 @@ class Indented(PatternCreator):
         other_lines = lines[len(indented_lines):]
         indented_text = "\n".join(indented_lines)
         try:
-            indented_match, indented_rest = do_parse(indented_text, self.pattern)
+            indented_match, indented_rest = self.pattern(indented_text)
         except NoPatternFound:
             raise NoPatternFound
         indented_rest = indented_rest.replace("\n", "\n"+indent)
@@ -409,7 +423,7 @@ class Escaped(PatternCreator):
     """Match the pattern and html escape the result"""
     def match(self, text, name):
         try:
-            match, rest = do_parse(text, self.pattern)
+            match, rest = self.pattern(text)
         except NoPatternFound:
             raise NoPatternFound
         result = [name]
@@ -424,7 +438,7 @@ class Lookahead(PatternCreator):
         unmatched = ""
         while text:
             try:
-                match, rest = do_parse(text, self.pattern)
+                match, rest = self.pattern(text)
                 result = [name]
                 _add_match_to_result(result, match)
                 return (result, unmatched+rest)
@@ -473,7 +487,7 @@ def do_parse(text, pattern):
             raise UnknownMatcherType(pattern_type)
 
 def parse_string(text, pattern):
-    match, rest = do_parse(text, pattern)
+    match, rest = pattern(text)
     return match
 
 def get_pattern_info(pattern):

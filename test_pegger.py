@@ -582,6 +582,7 @@ def test_match_indented_nested_bullets():
             pg.Ignore("* "),
             pg.Words()))
 
+    @pg.lazy
     def indented_bullets():
         return pg.Indented(
             pg.AllOf(
@@ -601,7 +602,7 @@ def test_match_indented_nested_bullets():
         ['indented_bullets',
          ['bullet', "Line Two"]]]
 
-    match, rest = indented_bullets()(data, 'indented_bullets')
+    match, rest = indented_bullets(data, 'indented_bullets')
     assert match == expected
     assert rest == "\n"
 
@@ -862,6 +863,7 @@ def test_indented():
             pg.Ignore("* "),
             pg.Words()))
 
+    @pg.lazy
     def nested_list():
         return pg.AllOf(
             pg.Ignore(
@@ -954,13 +956,6 @@ def test_escaped():
 
     result = pg.parse_string(data, escaped_text)
     assert expected == result
-
-def test_unknown_matcher():
-    def unknown():
-        return 1
-
-    with py.test.raises(pg.UnknownMatcherType):
-        result = pg.parse_string("", unknown)
 
 def test_get_pattern_info():
     def my_pattern():
