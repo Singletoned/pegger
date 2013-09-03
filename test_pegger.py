@@ -176,20 +176,20 @@ def test_match_many_simple():
     letters = pg.Many(a, b)
 
     expected = ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
-    match, rest = pg.match_many("abab", letters, "letters")
+    match, rest = letters.match("abab", "letters")
     assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_many("ababcc", letters, "letters")
+    match, rest = letters.match("ababcc", "letters")
     assert match == ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
-    match, rest = pg.match_many("ababcc", letters, "")
+    match, rest = letters.match("ababcc", "")
     assert match == ['', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_many("cab", letters, "letters")
+        match, rest = letters.match("cab", "letters")
 
 def test_match_many_complex():
     emphasis = pg.NamedPattern(
@@ -210,21 +210,20 @@ def test_match_many_complex():
         ['words', 'a phrase with '],
          ['emphasis', "bold words"],
          ['words', " in it"]]
-    match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
+    match, rest = body.match("a phrase with *bold words* in it", 'body')
     assert match == expected
     assert rest == ""
 
 def test_match_many_empty():
     "Test that empty matches don't raise NoPatternFound"
-    def linebreaks():
-        return pg.Many(
-            pg.OneOf(
-                pg.Ignore(
-                    "\n")))
+    linebreaks = pg.Many(
+        pg.OneOf(
+            pg.Ignore(
+                "\n")))
 
     data = "\n\n"
     expected = ['linebreaks', ""]
-    match, rest = pg.match_many(data, linebreaks(), 'linebreaks')
+    match, rest = linebreaks.match(data, 'linebreaks')
     assert match == expected
     assert rest == ""
 
@@ -255,7 +254,7 @@ def test_match_many_specificty():
         ['letter_a', "a"],
         ['other_letters', "c"]]
 
-    match, rest = pg.match_many(data, match_letters, 'match_letters')
+    match, rest = match_letters.match(data, 'match_letters')
     assert match == expected
     assert rest == ""
 

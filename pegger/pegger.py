@@ -46,10 +46,6 @@ class AllOf(OptionsMatcher):
     """A matcher that matches the all of the patterns given"""
 
 
-class Many(OptionsMatcher):
-    """A matcher that repeatedly matches any of the options"""
-
-
 class Words(object):
     """A matcher that matches any sequence of letters and spaces"""
     letters = string.uppercase + string.lowercase + " .,"
@@ -257,29 +253,32 @@ def filter_match(match, recursive=False):
         result.append("".join(submatches))
     return result
 
-def match_many(text, pattern, name):
+
+class Many(OptionsPatternCreator):
     """Repeatedly match any of the given patterns"""
-    result = [name]
-    rest = text
-    match_made = False
-    while rest:
-        for sub_pattern in pattern.options:
-            try:
-                match, rest = do_parse(rest, sub_pattern)
-                match_made = True
-                if utils.deep_bool(match):
-                    _add_match_to_result(result, match)
+    def match(self, text, name):
+        result = [name]
+        rest = text
+        match_made = False
+        while rest:
+            for sub_pattern in self.options:
+                try:
+                    match, rest = do_parse(rest, sub_pattern)
+                    match_made = True
+                    if utils.deep_bool(match):
+                        _add_match_to_result(result, match)
+                    break
+                except NoPatternFound:
+                    continue
+            else:
                 break
-            except NoPatternFound:
-                continue
+        if not match_made:
+            raise NoPatternFound
         else:
-            break
-    if not match_made:
-        raise NoPatternFound
-    else:
-        if result == [name]:
-            result.append("")
-        return (result, rest)
+            if result == [name]:
+                result.append("")
+            return (result, rest)
+
 
 class Not(PatternCreator):
     """Match a character if text doesn't start with pattern"""
@@ -424,7 +423,7 @@ matchers = {
     Words: match_words,
     Ignore: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     OneOf: match_one_of,
-    Many: match_many,
+    Many: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Not: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Optional: lambda text, pattern, pattern_name: pattern(text, pattern_name),
     Indented: match_indented,
