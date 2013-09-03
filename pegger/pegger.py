@@ -203,6 +203,9 @@ class Insert(PatternCreator):
     def match(self, text, name):
         return ([name, self.text], text)
 
+    def __repr__(self):
+        return "<%s text=%r>" % (self.__class__.__name__, self.text)
+
 
 class EOF(BasePatternCreator):
     """A matcher that matches the end of the string"""
