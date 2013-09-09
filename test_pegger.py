@@ -25,37 +25,37 @@ def test_match_text():
     """Test that a text pattern removes the pattern from the beginning
     of the text and returns the rest"""
 
-    letter_a = "a"
+    letter_a = pg.Text("a")
 
-    match, rest = pg.match_text("ab", letter_a, "letter_a")
+    match, rest = letter_a("ab", "letter_a")
     assert match == ['letter_a', "a"]
     assert rest == "b"
 
-    match, rest = pg.match_text("aabc", letter_a, "letter_a")
+    match, rest = letter_a("aabc", "letter_a")
     assert match == ['letter_a', "a"]
     assert rest == "abc"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_text("ccc", letter_a, "letter_a")
+        match, rest = letter_a("ccc", "letter_a")
 
 def test_match_words():
     """Test that Words matches letters and punctuation"""
     plain = pg.Words()
 
-    match, rest = pg.match_words("some words", plain, 'plain')
+    match, rest = plain("some words", 'plain')
     assert match == ['plain', "some words"]
     assert rest == ""
 
     # Match with no name
-    match, rest = pg.match_words("some words", plain, '')
+    match, rest = plain("some words", '')
     assert match == ['', "some words"]
     assert rest == ""
 
-    match, rest = pg.match_words("some words 123", plain, 'plain')
+    match, rest = plain("some words 123", 'plain')
     assert match == ['plain', "some words "]
     assert rest == "123"
 
-    match, rest = pg.match_words("Some words, and punctuation.", plain, 'plain')
+    match, rest = plain("Some words, and punctuation.", 'plain')
     assert match == ['plain', "Some words, and punctuation."]
     assert rest == ""
 
@@ -71,18 +71,18 @@ def test_match_all_of():
 
     word_ab = pg.AllOf(letter_a, letter_b)
 
-    match, rest = pg.match_all_of("ab", word_ab, "word_ab")
+    match, rest = word_ab("ab", "word_ab")
     assert match == ['word_ab', ['letter_a', "a"], ['letter_b', "b"]]
     assert rest == ""
 
     word_abc = pg.AllOf(letter_a, pg.Words())
 
     expected = ['word_ab', ['letter_a', "a"], "bc"]
-    match, rest = pg.match_all_of("abc", word_abc, "word_ab")
+    match, rest = word_abc("abc", "word_ab")
     assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_all_of("abc!", word_abc, "")
+    match, rest = word_abc("abc!", "")
     assert match == ['', ['letter_a', "a"], "bc"]
     assert rest == "!"
 
@@ -91,17 +91,17 @@ def test_match_all_of():
         pg.Words(),
         pg.Ignore("*"))
 
-    match, rest = pg.match_all_of("*abc*", emphasis, "emphasis")
+    match, rest = emphasis("*abc*", "emphasis")
     assert match == ['emphasis', "abc"]
 
     with py.test.raises(pg.NoPatternFound):
-        result = pg.match_all_of("cab", word_ab, "word_ab")
+        result = word_ab("cab", "word_ab")
 
     ignore_ab = pg.AllOf(
         pg.Ignore("a"),
         pg.Ignore("b"))
 
-    match, rest = pg.match_all_of("ab", ignore_ab, "ignore_ab")
+    match, rest = ignore_ab("ab", "ignore_ab")
     assert match == ['ignore_ab', ""]
     assert rest == ""
 
@@ -136,19 +136,19 @@ def test_match_one_of():
             emphasis)
 
     expected = ['phrase', "b", "o", "l", "d"]
-    match, rest = pg.match_one_of("*bold*", phrase, "phrase")
+    match, rest = phrase("*bold*", "phrase")
     assert match == expected
     assert rest == ""
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_one_of("123", phrase, "phrase")
+        match, rest = phrase("123", "phrase")
 
-    match, rest = pg.match_one_of("text", phrase, "phrase")
+    match, rest = phrase("text", "phrase")
     assert match == ['phrase', "text"]
     assert rest == ""
 
     # Test match with no name
-    match, rest = pg.match_one_of("text", phrase, "")
+    match, rest = phrase("text", "")
     assert match == ['', "text"]
     assert rest == ""
 
@@ -160,7 +160,7 @@ def test_match_one_of_empty():
 
     data = "*"
     expected = ['bullet', ""]
-    match, rest = pg.match_one_of(data, bullet, 'bullet')
+    match, rest = bullet(data, 'bullet')
     assert match == expected
     assert rest == ""
 
@@ -176,20 +176,20 @@ def test_match_many_simple():
     letters = pg.Many(a, b)
 
     expected = ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
-    match, rest = pg.match_many("abab", letters, "letters")
+    match, rest = letters("abab", "letters")
     assert match == expected
     assert rest == ""
 
-    match, rest = pg.match_many("ababcc", letters, "letters")
+    match, rest = letters("ababcc", "letters")
     assert match == ['letters', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
-    match, rest = pg.match_many("ababcc", letters, "")
+    match, rest = letters("ababcc", "")
     assert match == ['', ['a', "a"], ['b', "b"], ['a', "a"], ['b', "b"]]
     assert rest == "cc"
 
     with py.test.raises(pg.NoPatternFound):
-        match, rest = pg.match_many("cab", letters, "letters")
+        match, rest = letters("cab", "letters")
 
 def test_match_many_complex():
     emphasis = pg.NamedPattern(
@@ -210,21 +210,20 @@ def test_match_many_complex():
         ['words', 'a phrase with '],
          ['emphasis', "bold words"],
          ['words', " in it"]]
-    match, rest = pg.match_many("a phrase with *bold words* in it", body, 'body')
+    match, rest = body("a phrase with *bold words* in it", 'body')
     assert match == expected
     assert rest == ""
 
 def test_match_many_empty():
     "Test that empty matches don't raise NoPatternFound"
-    def linebreaks():
-        return pg.Many(
-            pg.OneOf(
-                pg.Ignore(
-                    "\n")))
+    linebreaks = pg.Many(
+        pg.OneOf(
+            pg.Ignore(
+                "\n")))
 
     data = "\n\n"
     expected = ['linebreaks', ""]
-    match, rest = pg.match_many(data, linebreaks(), 'linebreaks')
+    match, rest = linebreaks(data, 'linebreaks')
     assert match == expected
     assert rest == ""
 
@@ -255,7 +254,7 @@ def test_match_many_specificty():
         ['letter_a', "a"],
         ['other_letters', "c"]]
 
-    match, rest = pg.match_many(data, match_letters, 'match_letters')
+    match, rest = match_letters(data, 'match_letters')
     assert match == expected
     assert rest == ""
 
@@ -349,7 +348,7 @@ floosit"""
         " : ",
         'floosit']
 
-    match, rest = pg.match_all_of(data, joined_lines, 'joined_lines')
+    match, rest = joined_lines(data, 'joined_lines')
     assert match == expected
     assert rest == ""
 
@@ -420,7 +419,7 @@ def test_match_eof():
     text_then_eof = pg.AllOf(
         "a",
         pg.EOF())
-    match, rest = pg.match_all_of("a", text_then_eof, 'text_then_eof')
+    match, rest = text_then_eof("a", 'text_then_eof')
     assert match == ['text_then_eof', 'a', '']
 
 
@@ -444,7 +443,7 @@ class TestMatchIndented(unittest.TestCase):
             'list_item', "A bullet"]
 
         with py.test.raises(pg.NoPatternFound):
-            match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+            match, rest = indented_bullets(data, 'indented_bullets')
 
     def test_with_optional(self):
         """Test that optional allows you to match without an indent"""
@@ -464,7 +463,7 @@ class TestMatchIndented(unittest.TestCase):
             'indented_bullets',
             ['list_item', "A bullet"]]
 
-        match, rest = pg.match_indented(data, indented_bullets, 'indented_bullets')
+        match, rest = indented_bullets(data, 'indented_bullets')
         assert match == expected
         assert rest == ""
 
@@ -483,7 +482,7 @@ class TestMatchIndented(unittest.TestCase):
             ['paragraph', "Some text"]]
 
         for data in [data_with_spaces, data_with_tabs]:
-            match, rest = pg.match_indented(data, indented_text, 'indented_text')
+            match, rest = indented_text(data, 'indented_text')
             assert match == expected
             assert rest == ""
 
@@ -499,7 +498,7 @@ class TestMatchIndented(unittest.TestCase):
             'indented_text',
             "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == ""
 
@@ -513,7 +512,7 @@ class TestMatchIndented(unittest.TestCase):
 
         expected = [None, "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, None)
+        match, rest = indented_text(data, None)
         assert match == expected
         assert rest == ""
 
@@ -527,7 +526,7 @@ class TestMatchIndented(unittest.TestCase):
 
         expected = ['indented_text', "Some text"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == "\n"
 
@@ -542,7 +541,7 @@ class TestMatchIndented(unittest.TestCase):
         expected = ['indented_text', "Some text"]
         expected_rest = "\n  Unmatched text\n  More unmatched text"
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == expected_rest
 
@@ -551,7 +550,7 @@ class TestMatchIndented(unittest.TestCase):
         lines = pg.Many(
             pg.OneOf(
                 pg.Words(),
-                "\n"))
+                pg.Text("\n")))
         indented_text = pg.Indented(
             lines,
             indent_pattern="> ")
@@ -569,7 +568,7 @@ class TestMatchIndented(unittest.TestCase):
                     "\n",
                     "non whitespace"]
 
-        match, rest = pg.match_indented(data, indented_text, 'indented_text')
+        match, rest = indented_text(data, 'indented_text')
         assert match == expected
         assert rest == ""
 
@@ -583,6 +582,7 @@ def test_match_indented_nested_bullets():
             pg.Ignore("* "),
             pg.Words()))
 
+    @pg.lazy
     def indented_bullets():
         return pg.Indented(
             pg.AllOf(
@@ -602,15 +602,16 @@ def test_match_indented_nested_bullets():
         ['indented_bullets',
          ['bullet', "Line Two"]]]
 
-    match, rest = pg.match_indented(data, indented_bullets(), 'indented_bullets')
+    match, rest = indented_bullets(data, 'indented_bullets')
     assert match == expected
     assert rest == "\n"
 
 def test_indented_bullet():
-    def paragraph():
-        return pg.AllOf(
+    paragraph = pg.NamedPattern(
+        'paragraph',
+        pg.AllOf(
             pg.Ignore(pg.Optional("\n")),
-            pg.Words())
+            pg.Words()))
 
     indented_paragraphs =  pg.Indented(
         pg.Many(paragraph),
@@ -628,14 +629,15 @@ def test_indented_bullet():
         ['paragraph',
          "Paragraph Two"]]
 
-    match, rest = pg.match_indented(data, indented_paragraphs, "indented_paragraphs")
+    match, rest = indented_paragraphs(data, "indented_paragraphs")
     assert match == expected
 
 def test_match_escaped():
-    def html_text():
-        return pg.Many(
+    html_text = pg.NamedPattern(
+        'html_text',
+        pg.Many(
             pg.Words(
-                pg.Words.letters + "</>"))
+                pg.Words.letters + "</>")))
 
     escaped_text = pg.Escaped(html_text)
 
@@ -645,7 +647,7 @@ def test_match_escaped():
         'escaped_text',
         ['html_text', "&lt;p&gt;Some text&lt;/p&gt;"]]
 
-    match, rest = pg.match_escaped(data, escaped_text, 'escaped_text')
+    match, rest = escaped_text(data, 'escaped_text')
     assert match == expected
     assert rest == ""
 
@@ -667,8 +669,7 @@ foo
     assert rest == "bar\nbaz\n"
 
 def test_parse_string_a():
-    def letter_a():
-        return "a"
+    letter_a = pg.NamedPattern("letter_a", "a")
 
     result = pg.parse_string("a", letter_a)
     assert result == ['letter_a', "a"]
@@ -680,8 +681,7 @@ def test_parse_string_a():
         result = pg.parse_string("c", letter_a)
 
 def test_parse_string_b():
-    def letter_b():
-        return "b"
+    letter_b = pg.NamedPattern("letter_b", "b")
 
     result = pg.parse_string("b", letter_b)
     assert result == ['letter_b', "b"]
@@ -690,14 +690,11 @@ def test_parse_string_b():
         result = pg.parse_string("c", letter_b)
 
 def test_parse_string_ab():
-    def letter_a():
-        return "a"
-
-    def letter_b():
-        return "b"
-
-    def word_ab():
-        return pg.AllOf(letter_a, letter_b)
+    letter_a = pg.NamedPattern("letter_a", "a")
+    letter_b = pg.NamedPattern("letter_b", "b")
+    word_ab = pg.NamedPattern(
+        'word_ab',
+        pg.AllOf(letter_a, letter_b))
 
     expected = ['word_ab',
                 ['letter_a', "a"],
@@ -724,14 +721,11 @@ def test_parse_string_some_a():
         result = pg.parse_string("caa", word_a)
 
 def test_parse_string_some_aab():
-    def word_a():
-        return pg.Some('a')
-
-    def letter_b():
-        return "b"
-
-    def word_aab():
-        return pg.AllOf(word_a, letter_b)
+    word_a = pg.NamedPattern("word_a", pg.Some('a'))
+    letter_b = pg.NamedPattern("letter_b", "b")
+    word_aab = pg.NamedPattern(
+        'word_aab',
+        pg.AllOf(word_a, letter_b))
 
     expected = ['word_aab',
                 ['word_a', "aa"],
@@ -744,36 +738,41 @@ def test_parse_string_some_aab():
         result = pg.parse_string("caab", word_aab)
 
 def test_parse_words():
-    def body():
-        return pg.Words()
+    body = pg.NamedPattern(
+        'body',
+        pg.Words())
 
     result = pg.parse_string("The confused dog jumped over the fox", body)
     assert result == ['body', "The confused dog jumped over the fox"]
 
 def test_parse_ignore():
-    def emphasis():
-        return pg.AllOf(
-            lambda: pg.Ignore("*"),
-            lambda: pg.Words(),
-            lambda: pg.Ignore("*"))
+    emphasis = pg.NamedPattern(
+        'emphasis',
+        pg.AllOf(
+            pg.Ignore("*"),
+            pg.Words(),
+            pg.Ignore("*")))
 
     result = pg.parse_string("*bold words*", emphasis)
     assert result == ['emphasis', "bold words"]
 
 def test_parse_one_of():
-    def emphasis():
-        return pg.AllOf(
-            lambda: pg.Ignore("*"),
-            lambda: pg.Words(),
-            lambda: pg.Ignore("*"))
+    emphasis = pg.NamedPattern(
+        'emphasis',
+        pg.AllOf(
+            pg.Ignore("*"),
+            pg.Words(),
+            pg.Ignore("*")))
 
-    def words():
-        return pg.Words()
+    words = pg.NamedPattern(
+        'words',
+        pg.Words())
 
-    def phrase():
-        return pg.OneOf(
+    phrase = pg.NamedPattern(
+        'phrase',
+        pg.OneOf(
             words,
-            emphasis)
+            emphasis))
 
     expected = ['phrase', ['emphasis', "bold words"]]
     result = pg.parse_string("*bold words*", phrase)
@@ -784,22 +783,26 @@ def test_parse_one_of():
     assert result == expected
 
 def test_parse_many():
-    def emphasis():
-        return pg.AllOf(
-            lambda: pg.Ignore("*"),
-            lambda: pg.Words(),
-            lambda: pg.Ignore("*"))
+    emphasis = pg.NamedPattern(
+        'emphasis',
+        pg.AllOf(
+            pg.Ignore("*"),
+            pg.Words(),
+            pg.Ignore("*")))
 
-    def words():
-        return pg.Words()
+    words = pg.NamedPattern(
+        'words',
+        pg.Words())
 
-    def phrase():
-        return pg.OneOf(
+    phrase = pg.NamedPattern(
+        'phrase',
+        pg.OneOf(
             words,
-            emphasis)
+            emphasis))
 
-    def body():
-        return pg.Many(phrase)
+    body = pg.NamedPattern(
+        'body',
+        pg.Many(phrase))
 
     expected = ['body',
                 ['phrase',
@@ -816,8 +819,9 @@ def test_parse_many():
         result = pg.parse_string("123", body)
 
 def test_not():
-    def not_a():
-        return pg.Not("a")
+    not_a = pg.NamedPattern(
+        'not_a',
+        pg.Not("a"))
 
     result = pg.parse_string("bc", not_a)
     assert result == ['not_a', 'b']
@@ -826,22 +830,21 @@ def test_not():
         result = pg.parse_string("a", not_a)
 
 def test_optional():
-    def optional_a():
-        return pg.Optional("a")
+    optional_a = pg.NamedPattern(
+        'optional_a',
+        pg.Optional("a"))
 
     result = pg.parse_string("a", optional_a)
     expected = ['', "a"]
     assert expected == result
 
+    letters = pg.NamedPattern(
+        'letters',
+        pg.Words())
 
-    def optional_a():
-        return pg.Optional("a")
-
-    def letters():
-        return pg.Words()
-
-    def body():
-        return pg.AllOf(optional_a, letters)
+    body = pg.NamedPattern(
+        'body',
+        pg.AllOf(optional_a, letters))
 
     result = pg.parse_string("abc", body)
     expected = [
@@ -851,14 +854,16 @@ def test_optional():
     assert expected == result
 
 def test_indented():
-    def list_item():
-        return pg.AllOf(
+    list_item = pg.NamedPattern(
+        'list_item',
+        pg.AllOf(
             pg.Ignore(
                 pg.Optional(
                     pg.Many("\n"))),
             pg.Ignore("* "),
-            pg.Words())
+            pg.Words()))
 
+    @pg.lazy
     def nested_list():
         return pg.AllOf(
             pg.Ignore(
@@ -917,13 +922,15 @@ def test_indented():
     assert expected == result
 
 def test_escaped():
-    def html_text():
-        return pg.Many(
+    html_text = pg.NamedPattern(
+        'html_text',
+        pg.Many(
             pg.Words(
-                pg.Words.letters+"</>"))
+                pg.Words.letters+"</>")))
 
-    def escaped_text():
-        return pg.Escaped(html_text)
+    escaped_text = pg.NamedPattern(
+        'escaped_text',
+        pg.Escaped(html_text))
 
     data = """<p>Some Text</p>"""
 
@@ -939,8 +946,9 @@ def test_escaped():
         pg.Words(
             pg.Words.letters+"</>"))
 
-    def escaped_text():
-        return pg.Escaped(html_text)
+    escaped_text = pg.NamedPattern(
+        'escaped_text',
+        pg.Escaped(html_text))
 
     expected = [
         'escaped_text',
@@ -949,39 +957,17 @@ def test_escaped():
     result = pg.parse_string(data, escaped_text)
     assert expected == result
 
-def test_unknown_matcher():
-    def unknown():
-        return 1
-
-    with py.test.raises(pg.UnknownMatcherType):
-        result = pg.parse_string("", unknown)
-
-def test_get_pattern_info():
-    def my_pattern():
-        return "123"
-
-    pattern, p_name, p_type = pg.get_pattern_info(my_pattern)
-    assert pattern == "123"
-    assert p_name == "my_pattern"
-    assert p_type == str
-
-    lambda_pattern = lambda: dict()
-
-    pattern, p_name, p_type = pg.get_pattern_info(lambda_pattern)
-    assert pattern == dict()
-    assert p_name == ""
-    assert p_type == type(dict())
 
 def test_reprs():
     # Pattern matchers
     assert repr(pg.Some("a")) == "<Some pattern='a'>"
-    assert repr(pg.Ignore("#")) == "<Ignore pattern='#'>"
-    assert repr(pg.Not("#")) == "<Not pattern='#'>"
-    assert repr(pg.Optional("#")) == "<Optional pattern='#'>"
+    assert repr(pg.Ignore("#")) == "<Ignore pattern=<Text pattern='#'>>"
+    assert repr(pg.Not("#")) == "<Not pattern=<Text pattern='#'>>"
+    assert repr(pg.Optional("#")) == "<Optional pattern=<Text pattern='#'>>"
 
     # Option matchers
-    assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=('abc', <Not pattern='#'>)>"
-    assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=('abc', <Not pattern='#'>)>"
+    assert repr(pg.OneOf("abc", pg.Not("#"))) == "<OneOf options=(<Text pattern='abc'>, <Not pattern=<Text pattern='#'>>)>"
+    assert repr(pg.Many("abc", pg.Not("#"))) == "<Many options=(<Text pattern='abc'>, <Not pattern=<Text pattern='#'>>)>"
     assert repr(pg.Words()) == "<Words letters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,'>"
 
 def test_add_match_to_result():
